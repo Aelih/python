@@ -6,7 +6,7 @@ import validators
 from time import sleep
 import pandas as pd
 import os
-from tkinter import Tk, Frame, BOTH, messagebox
+from tkinter import Label, Tk, Frame, BOTH, messagebox
 from tkinter.ttk import Frame, Button, Style
 
 stdurl = "http://joyreactor.cc"
@@ -83,6 +83,9 @@ class MainForm(Frame):
 
         quitButton = Button(self, text="Закрыть", command=self.quit)
         quitButton.place(x=150, y=50)
+
+        greeting = Label(text="Привет!")
+        greeting.pack()
 
     def centerWindow(self):
         w = 300
