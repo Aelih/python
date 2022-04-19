@@ -7,7 +7,7 @@ import validators
 from time import sleep
 import pandas as pd
 import os
-from tkinter import DISABLED, Entry, Label, Tk, Frame, BOTH, messagebox
+from tkinter import Entry, Label, Tk, Frame, BOTH
 from tkinter.ttk import Frame, Button, Style
 
 stdurl = "http://joyreactor.cc"
