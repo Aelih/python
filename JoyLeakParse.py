@@ -1,4 +1,5 @@
-from cgitb import html
+from cgitb import html, text
+from multiprocessing.sharedctypes import Value
 from operator import truediv
 import requests
 from bs4 import BeautifulSoup
@@ -6,14 +7,14 @@ import validators
 from time import sleep
 import pandas as pd
 import os
-from tkinter import Label, Tk, Frame, BOTH, messagebox
+from tkinter import DISABLED, Entry, Label, Tk, Frame, BOTH, messagebox
 from tkinter.ttk import Frame, Button, Style
 
 stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"
 dataleaklinks = []
 sleeptime = 1
-PagesRange = 2
+PagesRange = 10
 desktoppath = os.path.join((os.environ['USERPROFILE']), 'Desktop')
 
 #Проверка на корректность URL
@@ -78,14 +79,24 @@ class MainForm(Frame):
         self.pack(fill=BOTH, expand=1)
         self.centerWindow()
 
+        greeting = Label(self, text="Привет! Параметры нельзя изменить!")
+        greeting.pack()
+
+        emptyspace = Label(self)
+        emptyspace.pack()
+
+        pagesQtyLabel = Label(self, text="Кол-во страниц", )
+        pagesQtyLabel.pack()
+
+        pagesQty = Entry(self)
+        pagesQty.insert(0, PagesRange)
+        pagesQty.pack()
+
         runButton = Button(self, text="Запустить", command=ParseComments)
-        runButton.place(x=50, y=50)
+        runButton.place(x=50, y=100)
 
         quitButton = Button(self, text="Закрыть", command=self.quit)
-        quitButton.place(x=150, y=50)
-
-        greeting = Label(text="Привет!")
-        greeting.pack()
+        quitButton.place(x=175, y=100)
 
     def centerWindow(self):
         w = 300
@@ -97,12 +108,12 @@ class MainForm(Frame):
         x = (sw - w) / 2
         y = (sh - h) / 2
         self.parent.geometry('%dx%d+%d+%d' % (w, h, x, y))
+   
 
 #Создаём главное-корневое окно
 def main():
     root = Tk()
-    root.geometry("250x150+300+300")
-    app = MainForm(root)
+    MainForm(root)
     root.mainloop()
 
 if __name__ == '__main__':
