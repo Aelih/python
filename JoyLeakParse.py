@@ -10,10 +10,9 @@ import os
 
 # %%
 stdurl = "http://joyreactor.cc"
-#starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"
-starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0/4509"
+starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"
 dataleaklinks = []
-sleeptime = 0
+sleeptime = 1
 PagesRange = 2
 desktoppath = os.path.join((os.environ['USERPROFILE']), 'Desktop')
 
