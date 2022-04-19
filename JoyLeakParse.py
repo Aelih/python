@@ -7,14 +7,14 @@ import validators
 from time import sleep
 import pandas as pd
 import os
-from tkinter import Entry, Label, Tk, Frame, BOTH
+from tkinter import Entry, Label, Tk, Frame, messagebox, BOTH
 from tkinter.ttk import Frame, Button, Style
 
 stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"
 dataleaklinks = []
 sleeptime = 1
-PagesRange = 10
+PagesRange = 20
 desktoppath = os.path.join((os.environ['USERPROFILE']), 'Desktop')
 
 #Проверка на корректность URL
@@ -29,6 +29,7 @@ def SaveToCsv():
     header = ['link', 'post']
     df = pd.DataFrame(dataleaklinks, columns=header)
     df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
+    messagebox.showinfo("Готово!", "Файл найдёшь здесь: "+desktoppath+'\leaked.csv')
 
 #Разбор комментариев
 def ParseComments():
