@@ -49,7 +49,7 @@ for i in range(PagesRange):
             
             for ref in refs:
                 if CorrectUrl(ref.text) == True:
-                    dataleaklinks.append([ref.text])
+                    dataleaklinks.append([ref.text, datapostlink])
     
     Startpage = requests.get(NextPageUrl)
     sleep(sleeptime)
@@ -57,7 +57,7 @@ for i in range(PagesRange):
 
 
 # %%
-header = ['commenttext']
+header = ['link', 'post']
 df = pd.DataFrame(dataleaklinks, columns=header)
 df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
 
