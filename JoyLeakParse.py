@@ -78,11 +78,11 @@ class MainForm(Frame):
         self.pack(fill=BOTH, expand=1)
         self.centerWindow()
 
-        quitButton = Button(self, text="Закрыть", command=self.quit)
-        quitButton.place(x=50, y=50)
-
         runButton = Button(self, text="Запустить", command=ParseComments)
-        runButton.place(x=150, y=50)
+        runButton.place(x=50, y=50)
+
+        quitButton = Button(self, text="Закрыть", command=self.quit)
+        quitButton.place(x=150, y=50)
 
     def centerWindow(self):
         w = 300
