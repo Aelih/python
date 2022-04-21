@@ -15,7 +15,7 @@ PagesRange = 2
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 
 # Чтение и подготовка страницы по URL
-def ReadPageSoup(pageUrl)
+def ReadPageSoup(pageUrl):
     Startpage = requests.get(pageUrl)
     sleep(sleeptime)
     SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
