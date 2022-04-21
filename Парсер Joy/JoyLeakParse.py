@@ -4,7 +4,7 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import Entry, Label, Tk, Frame, Button, messagebox, BOTH
+from tkinter import Entry, Label, Tk, Frame, Button, messagebox, X, RIGHT, BOTH
 from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
@@ -14,25 +14,32 @@ sleeptime = 1
 PagesRange = 2
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 
-#Проверка на корректность URL
+# Чтение и подготовка страницы по URL
+def ReadPageSoup(pageUrl)
+    Startpage = requests.get(pageUrl)
+    sleep(sleeptime)
+    SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
+    return SoupStartpage
+
+# Проверка на корректность URL
 def CorrectUrl(commenttext):
-    if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('joyreactor') == -1: 
+    if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('joyreactor') == -1:
         return True
     else:
         return False
 
-#Сохраняем таблицу в CSV через pandas
+# Сохраняем таблицу в CSV через pandas
 def SaveToCsv():
     header = ['link', 'post']
     df = pd.DataFrame(dataleaklinks, columns=header)
     df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
-    messagebox.showinfo("Готово!", "Файл найдёшь здесь: "+desktoppath+'\leaked.csv')
+    messagebox.showinfo("Готово!", "Файл найдёшь здесь: " +
+                        desktoppath+'\leaked.csv')
 
-#Разбор комментариев
+# Разбор комментариев
 def ParseComments():
-    Startpage = requests.get(starturl)
-    sleep(sleeptime)
-    SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
+    # Читает начальную страницу
+    SoupStartpage = ReadPageSoup(starturl)
 
     for i in range(PagesRange):
         NextPageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
@@ -52,69 +59,87 @@ def ParseComments():
             for comment in comments:
                 soupcomment = BeautifulSoup(str(comment), "html.parser")
                 refs = soupcomment.findAll('a')
-                
+
                 for ref in refs:
                     if CorrectUrl(ref.text) == True:
                         dataleaklinks.append([ref.text, datapostlink])
-        
-        Startpage = requests.get(NextPageUrl)
-        sleep(sleeptime)
-        SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
+
+        # Читает следующую страницу (кнопка Вперед)
+        SoupStartpage = ReadPageSoup(NextPageUrl)
 
     SaveToCsv()
 
+
 def addElements(self):
-    greeting = Label(self, text="Привет! Параметры нельзя изменить!")
-    greeting.pack()
+    # Создается новая рамка `frm_header` для заголовка.
+    frm_header = Frame(self)
+    # Помещает рамку в окно приложения.
+    frm_header.pack()
+    
+    # Создает ярлык и текстовок поле для ввода имени.
+    lbl_greeting = Label(master=frm_header, text="Привет! В разработке...")
+    lbl_greeting.pack()
 
-    emptyspace = Label(self)
-    emptyspace.pack()
+    frm_body = Frame(self)
+    frm_body.pack()
 
-    pagesQtyLabel = Label(self, text="Кол-во страниц", )
-    pagesQtyLabel.pack()
+    lbl_pagesQty = Label(master=frm_body, text="Кол-во читаемых страниц", )
+    ent_pagesQty = Entry(master=frm_body, width=50)
+    ent_pagesQty.insert(0, PagesRange)
+    # Использует менеджер геометрии grid для размещения ярлыка и
+    # однострочного поля для ввода текста в первый и второй столбец
+    # первой строки сетки.
+    lbl_pagesQty.grid(row=0, column=0, sticky="e")
+    ent_pagesQty.grid(row=0, column=1)
 
-    pagesQty = Entry(self)
-    pagesQty.insert(0, PagesRange)
-    pagesQty.pack()
+    # Создает ярлык и текстовое поле для ввода начальной страницы.
+    lbl_starturl = Label(master=frm_body, text="Начальная страница", )
+    ent_starturl = Entry(master=frm_body, width=50)
+    ent_starturl.insert(0, starturl)
+    # Размещает виджеты на вторую строку сетки
+    lbl_starturl.grid(row=1, column=0, sticky="e")
+    ent_starturl.grid(row=1, column=1)
+    
+    frm_footer = Frame(self)
+    frm_footer.pack(fill=X, ipadx=5, ipady=5)
 
-    runButton = Button(self, text="Запустить", command=ParseComments)
-    runButton.place(x=50, y=100)
+    btn_quit = Button(master=frm_footer, text="Закрыть", command=self.quit)
+    btn_quit.pack(side=RIGHT, padx=10, ipadx=10)
 
-    quitButton = Button(self, text="Закрыть", command=self.quit)
-    quitButton.place(x=175, y=100)
+    btn_run = Button(master=frm_footer, text="Запустить", command=ParseComments)
+    btn_run.pack(side=RIGHT, ipadx=10) 
 
-#Строим форму на tkinter
+# Строим форму на tkinter
 class MainForm(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
-        self.initUI() 
+        self.initUI()
 
     def initUI(self):
         self.parent.title("Парсер Joy")
         self.style = Style()
         self.style.theme_use("default")
         self.pack(fill=BOTH, expand=1)
-        self.centerWindow()
+        #self.centerWindow()
         addElements(self)
 
     def centerWindow(self):
         w = 300
         h = 150
- 
+
         sw = self.parent.winfo_screenwidth()
         sh = self.parent.winfo_screenheight()
- 
+
         x = (sw - w) / 2
         y = (sh - h) / 2
         self.parent.geometry('%dx%d+%d+%d' % (w, h, x, y))
-   
 
-#Создаём главное-корневое окно
+# Создаём главное-корневое окно
 def main():
     Window = Tk()
     MainForm(Window)
     Window.mainloop()
 
 if __name__ == '__main__':
-    main()        
+    main()
