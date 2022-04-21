@@ -11,7 +11,7 @@ stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"
 dataleaklinks = []
 sleeptime = 1
-PagesRange = 2
+PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 
 # Чтение и подготовка страницы по URL
