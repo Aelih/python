@@ -1,12 +1,9 @@
-from cgitb import html, text
-from multiprocessing.sharedctypes import Value
-from operator import truediv
 import requests
 from bs4 import BeautifulSoup
-import validators
+from validators import url
 from time import sleep
 import pandas as pd
-import os
+from os import path, environ
 from tkinter import Entry, Label, Tk, Frame, messagebox, BOTH
 from tkinter.ttk import Frame, Button, Style
 
@@ -14,12 +11,12 @@ stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"
 dataleaklinks = []
 sleeptime = 1
-PagesRange = 20
-desktoppath = os.path.join((os.environ['USERPROFILE']), 'Desktop')
+PagesRange = 2
+desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 
 #Проверка на корректность URL
 def CorrectUrl(commenttext):
-    if validators.url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('joyreactor') == -1: 
+    if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('joyreactor') == -1: 
         return True
     else:
         return False
@@ -71,8 +68,8 @@ class MainForm(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
-        self.initUI()
-        
+        self.initUI() 
+
     def initUI(self):
         self.parent.title("Парсер Joy")
         self.style = Style()
