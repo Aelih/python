@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['JoyLeakParse.py'],
+    ['Парсер Joy\\JoyLeakParse.py'],
     pathex=[],
     binaries=[],
     datas=[],
