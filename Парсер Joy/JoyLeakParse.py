@@ -4,8 +4,8 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import Entry, Label, Tk, Frame, messagebox, BOTH
-from tkinter.ttk import Frame, Button, Style
+from tkinter import Entry, Label, Tk, Frame, Button, messagebox, BOTH
+from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"
@@ -112,9 +112,9 @@ class MainForm(Frame):
 
 #Создаём главное-корневое окно
 def main():
-    root = Tk()
-    MainForm(root)
-    root.mainloop()
+    Window = Tk()
+    MainForm(Window)
+    Window.mainloop()
 
 if __name__ == '__main__':
     main()        
