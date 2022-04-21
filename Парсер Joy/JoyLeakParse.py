@@ -63,6 +63,26 @@ def ParseComments():
 
     SaveToCsv()
 
+def addElements(self):
+    greeting = Label(self, text="Привет! Параметры нельзя изменить!")
+    greeting.pack()
+
+    emptyspace = Label(self)
+    emptyspace.pack()
+
+    pagesQtyLabel = Label(self, text="Кол-во страниц", )
+    pagesQtyLabel.pack()
+
+    pagesQty = Entry(self)
+    pagesQty.insert(0, PagesRange)
+    pagesQty.pack()
+
+    runButton = Button(self, text="Запустить", command=ParseComments)
+    runButton.place(x=50, y=100)
+
+    quitButton = Button(self, text="Закрыть", command=self.quit)
+    quitButton.place(x=175, y=100)
+
 #Строим форму на tkinter
 class MainForm(Frame):
     def __init__(self, parent):
@@ -76,25 +96,7 @@ class MainForm(Frame):
         self.style.theme_use("default")
         self.pack(fill=BOTH, expand=1)
         self.centerWindow()
-
-        greeting = Label(self, text="Привет! Параметры нельзя изменить!")
-        greeting.pack()
-
-        emptyspace = Label(self)
-        emptyspace.pack()
-
-        pagesQtyLabel = Label(self, text="Кол-во страниц", )
-        pagesQtyLabel.pack()
-
-        pagesQty = Entry(self)
-        pagesQty.insert(0, PagesRange)
-        pagesQty.pack()
-
-        runButton = Button(self, text="Запустить", command=ParseComments)
-        runButton.place(x=50, y=100)
-
-        quitButton = Button(self, text="Закрыть", command=self.quit)
-        quitButton.place(x=175, y=100)
+        addElements(self)
 
     def centerWindow(self):
         w = 300
