@@ -1,10 +1,11 @@
+from turtle import bgcolor
 import requests
 from bs4 import BeautifulSoup
 from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import Entry, Label, Tk, Frame, Button, messagebox, PhotoImage, X, RIGHT, BOTH
+from tkinter import LEFT, Entry, Label, Tk, Frame, Button, messagebox, PhotoImage, X, RIGHT, BOTH
 from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
@@ -13,6 +14,10 @@ dataleaklinks = []
 sleeptime = 1
 PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
+
+# Окно "О программе"
+def About():
+    messagebox.showinfo("О программе", "Сделано Aelih. Спасибо за использование :-)")
 
 # Чтение и подготовка страницы по URL
 def ReadPageSoup(pageUrl):
@@ -115,12 +120,15 @@ class MainForm(Frame):
         
         frm_footer = Frame(self)
         frm_footer.pack(fill=X, ipadx=5, ipady=5)
-
+        
         btn_quit = Button(master=frm_footer, text="Закрыть", command=self.quit)
         btn_quit.pack(side=RIGHT, padx=10, ipadx=10)
 
         btn_run = Button(master=frm_footer, text="Запустить", command=ParseComments)
-        btn_run.pack(side=RIGHT, ipadx=10)     
+        btn_run.pack(side=RIGHT, ipadx=10) 
+
+        btn_about = Button(master=frm_footer, text="?", command=About, bg="#83c795")
+        btn_about.pack(side=LEFT, padx=10)    
 
 # Персональные настройки окна    
 def WindowCustomize(Window):
