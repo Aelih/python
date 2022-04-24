@@ -14,64 +14,7 @@ sleeptime = 1
 PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 
-# Окно "О программе"
-def About():
-    messagebox.showinfo("О программе", "Сделано Aelih. Спасибо за использование :-)")
 
-# Чтение и подготовка страницы по URL
-def ReadPageSoup(pageUrl):
-    Startpage = requests.get(pageUrl)
-    sleep(sleeptime)
-    SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
-    return SoupStartpage
-
-# Проверка на корректность URL
-def CorrectUrl(commenttext):
-    if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('joyreactor') == -1:
-        return True
-    else:
-        return False
-
-# Сохраняем таблицу в CSV через pandas
-def SaveToCsv():
-    header = ['link', 'post']
-    df = pd.DataFrame(dataleaklinks, columns=header)
-    df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
-    messagebox.showinfo("Готово!", "Файл найдёшь здесь: " +
-                        desktoppath+'\leaked.csv')
-
-# Разбор комментариев
-def ParseComments():
-    # Читает начальную страницу
-    SoupStartpage = ReadPageSoup(starturl)
-
-    for i in range(PagesRange):
-        NextPageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
-        posts = SoupStartpage.findAll('span', class_='link_wr')
-        datapostlinks = []
-
-        for post in posts:
-            postlink = stdurl+post.find('a', class_='link').get('href')
-            datapostlinks.append(postlink)
-
-        for datapostlink in datapostlinks:
-            respost = requests.get(datapostlink)
-            sleep(sleeptime)
-            soup = BeautifulSoup(respost.text, "html.parser")
-            comments = soup.findAll('div', class_='comment')
-
-            for comment in comments:
-                soupcomment = BeautifulSoup(str(comment), "html.parser")
-                refs = soupcomment.findAll('a')
-
-                for ref in refs:
-                    if CorrectUrl(ref.text) == True:
-                        dataleaklinks.append([ref.text, datapostlink])
-
-        # Читает следующую страницу (кнопка Вперед)
-        SoupStartpage = ReadPageSoup(NextPageUrl)
-
-    SaveToCsv()
 
 # Строим форму на tkinter
 class MainForm(Frame):
@@ -123,11 +66,70 @@ class MainForm(Frame):
         btn_quit = Button(master=frm_footer, text="Закрыть", command=self.quit)
         btn_quit.pack(side=RIGHT, padx=10, ipadx=10)
 
-        btn_run = Button(master=frm_footer, text="Запустить", command=ParseComments)
+        btn_run = Button(master=frm_footer, text="Запустить", command=self.ParseComments)
         btn_run.pack(side=RIGHT, ipadx=10) 
 
-        btn_about = Button(master=frm_footer, text="?", command=About, bg="#83c795")
-        btn_about.pack(side=LEFT, padx=10)    
+        btn_about = Button(master=frm_footer, text="?", command=self.About, bg="#83c795")
+        btn_about.pack(side=LEFT, padx=10)  
+
+    # Окно "О программе"
+    def About(Self):
+        messagebox.showinfo("О программе", "Сделано Aelih. Спасибо за использование :-)")
+
+    # Чтение и подготовка страницы по URL
+    def ReadPageSoup(self, pageUrl):
+        Startpage = requests.get(pageUrl)
+        sleep(sleeptime)
+        SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
+        return SoupStartpage
+
+    # Проверка на корректность URL
+    def CorrectUrl(self, commenttext):
+        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('joyreactor') == -1:
+            return True
+        else:
+            return False
+
+    # Сохраняем таблицу в CSV через pandas
+    def SaveToCsv(self):
+        header = ['link', 'post']
+        df = pd.DataFrame(dataleaklinks, columns=header)
+        df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
+        messagebox.showinfo("Готово!", "Файл найдёшь здесь: " +
+                            desktoppath+'\leaked.csv')
+
+    # Разбор комментариев
+    def ParseComments(self):
+        # Читает начальную страницу
+        SoupStartpage = self.ReadPageSoup(starturl)
+
+        for i in range(PagesRange):
+            NextPageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
+            posts = SoupStartpage.findAll('span', class_='link_wr')
+            datapostlinks = []
+
+            for post in posts:
+                postlink = stdurl+post.find('a', class_='link').get('href')
+                datapostlinks.append(postlink)
+
+            for datapostlink in datapostlinks:
+                respost = requests.get(datapostlink)
+                sleep(sleeptime)
+                soup = BeautifulSoup(respost.text, "html.parser")
+                comments = soup.findAll('div', class_='comment')
+
+                for comment in comments:
+                    soupcomment = BeautifulSoup(str(comment), "html.parser")
+                    refs = soupcomment.findAll('a')
+
+                    for ref in refs:
+                        if self.CorrectUrl(ref.text) == True:
+                            dataleaklinks.append([ref.text, datapostlink])
+
+            # Читает следующую страницу (кнопка Вперед)
+            SoupStartpage = self.ReadPageSoup(NextPageUrl)
+
+        self.SaveToCsv()
 
 # Персональные настройки окна    
 def WindowCustomize(Window):
