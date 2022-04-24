@@ -4,7 +4,7 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import Entry, Label, Tk, Frame, Button, messagebox, X, RIGHT, BOTH
+from tkinter import Entry, Label, Tk, Frame, Button, messagebox, PhotoImage, X, RIGHT, BOTH
 from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
@@ -123,11 +123,16 @@ class MainForm(Frame):
         self.pack(fill=BOTH, expand=1)
         addElements(self)
     
+def WindowCustomize(Window):
+    Window.resizable(width=False, height=False)
+    iconpic = PhotoImage(file='Tux.ico')
+    Window.iconphoto(False, iconpic)
+
 # Создаём главное-корневое окно
 def main():
     Window = Tk()
     MainForm(Window)
-    Window.resizable(width=False, height=False)
+    WindowCustomize(Window)
     Window.mainloop()
 
 if __name__ == '__main__':
