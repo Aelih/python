@@ -69,46 +69,6 @@ def ParseComments():
 
     SaveToCsv()
 
-
-def addElements(self):
-    # Создается новая рамка `frm_header` для заголовка.
-    frm_header = Frame(self)
-    # Помещает рамку в окно приложения.
-    frm_header.pack()
-    
-    # Создает ярлык и текстовок поле для ввода имени.
-    lbl_greeting = Label(master=frm_header, text="Привет! В разработке...")
-    lbl_greeting.pack()
-
-    frm_body = Frame(self)
-    frm_body.pack()
-
-    lbl_pagesQty = Label(master=frm_body, text="Кол-во читаемых страниц", )
-    ent_pagesQty = Entry(master=frm_body, width=50)
-    ent_pagesQty.insert(0, PagesRange)
-    # Использует менеджер геометрии grid для размещения ярлыка и
-    # однострочного поля для ввода текста в первый и второй столбец
-    # первой строки сетки.
-    lbl_pagesQty.grid(row=0, column=0, sticky="e")
-    ent_pagesQty.grid(row=0, column=1)
-
-    # Создает ярлык и текстовое поле для ввода начальной страницы.
-    lbl_starturl = Label(master=frm_body, text="Начальная страница", )
-    ent_starturl = Entry(master=frm_body, width=50)
-    ent_starturl.insert(0, starturl)
-    # Размещает виджеты на вторую строку сетки
-    lbl_starturl.grid(row=1, column=0, sticky="e")
-    ent_starturl.grid(row=1, column=1)
-    
-    frm_footer = Frame(self)
-    frm_footer.pack(fill=X, ipadx=5, ipady=5)
-
-    btn_quit = Button(master=frm_footer, text="Закрыть", command=self.quit)
-    btn_quit.pack(side=RIGHT, padx=10, ipadx=10)
-
-    btn_run = Button(master=frm_footer, text="Запустить", command=ParseComments)
-    btn_run.pack(side=RIGHT, ipadx=10) 
-
 # Строим форму на tkinter
 class MainForm(Frame):
     def __init__(self, parent):
@@ -121,8 +81,48 @@ class MainForm(Frame):
         self.style = Style()
         self.style.theme_use("default")
         self.pack(fill=BOTH, expand=1)
-        addElements(self)
-    
+        self.addElements()
+
+    def addElements(self):
+        # Создается новая рамка `frm_header` для заголовка.
+        frm_header = Frame(self)
+        # Помещает рамку в окно приложения.
+        frm_header.pack()
+        
+        # Создает ярлык и текстовок поле для ввода имени.
+        lbl_greeting = Label(master=frm_header, text="Привет! В разработке...")
+        lbl_greeting.pack()
+
+        frm_body = Frame(self)
+        frm_body.pack()
+
+        lbl_pagesQty = Label(master=frm_body, text="Кол-во читаемых страниц", )
+        ent_pagesQty = Entry(master=frm_body, width=50)
+        ent_pagesQty.insert(0, PagesRange)
+        # Использует менеджер геометрии grid для размещения ярлыка и
+        # однострочного поля для ввода текста в первый и второй столбец
+        # первой строки сетки.
+        lbl_pagesQty.grid(row=0, column=0, sticky="e")
+        ent_pagesQty.grid(row=0, column=1)
+
+        # Создает ярлык и текстовое поле для ввода начальной страницы.
+        lbl_starturl = Label(master=frm_body, text="Начальная страница", )
+        ent_starturl = Entry(master=frm_body, width=50)
+        ent_starturl.insert(0, starturl)
+        # Размещает виджеты на вторую строку сетки
+        lbl_starturl.grid(row=1, column=0, sticky="e")
+        ent_starturl.grid(row=1, column=1)
+        
+        frm_footer = Frame(self)
+        frm_footer.pack(fill=X, ipadx=5, ipady=5)
+
+        btn_quit = Button(master=frm_footer, text="Закрыть", command=self.quit)
+        btn_quit.pack(side=RIGHT, padx=10, ipadx=10)
+
+        btn_run = Button(master=frm_footer, text="Запустить", command=ParseComments)
+        btn_run.pack(side=RIGHT, ipadx=10)     
+
+# Персональные настройки окна    
 def WindowCustomize(Window):
     Window.resizable(width=False, height=False)
     iconpic = PhotoImage(file="D:/Software/!programming/python/Парсер Joy/tux.png")
