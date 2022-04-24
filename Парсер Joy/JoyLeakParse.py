@@ -1,4 +1,3 @@
-from turtle import bgcolor
 import requests
 from bs4 import BeautifulSoup
 from validators import url
