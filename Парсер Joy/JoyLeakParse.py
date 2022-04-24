@@ -122,11 +122,12 @@ class MainForm(Frame):
         self.style.theme_use("default")
         self.pack(fill=BOTH, expand=1)
         addElements(self)
-
+    
 # Создаём главное-корневое окно
 def main():
     Window = Tk()
     MainForm(Window)
+    Window.resizable(width=False, height=False)
     Window.mainloop()
 
 if __name__ == '__main__':
