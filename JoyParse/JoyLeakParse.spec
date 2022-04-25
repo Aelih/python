@@ -8,7 +8,7 @@ a = Analysis(
     ['JoyParse\\JoyLeakParse.py'],
     pathex=[],
     binaries=[],
-    datas=[('JoyParse/tux.png', '.')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
