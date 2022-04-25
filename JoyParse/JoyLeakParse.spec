@@ -5,10 +5,10 @@ block_cipher = None
 
 
 a = Analysis(
-    ['Парсер Joy\\JoyLeakParse.py'],
+    ['JoyParse\\JoyLeakParse.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('JoyParse/tux.png', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,10 +35,11 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='JoyParse\\Tux.ico',
 )
