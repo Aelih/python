@@ -134,7 +134,7 @@ class MainForm(Frame):
 # Персональные настройки окна    
 def WindowCustomize(Window):
     Window.resizable(width=False, height=False)
-    iconpic = PhotoImage(file="D:/Software/!programming/python/Парсер Joy/tux.png")
+    iconpic = PhotoImage(file="Парсер Joy/tux.png")
     Window.iconphoto(False, iconpic)
 
 # Создаём главное-корневое окно
