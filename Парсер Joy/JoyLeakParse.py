@@ -83,7 +83,7 @@ class MainForm(Frame):
 
     # Проверка на корректность URL
     def CorrectUrl(self, commenttext):
-        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('joyreactor') == -1:
+        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('reactor') == -1:
             return True
         else:
             return False
