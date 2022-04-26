@@ -4,7 +4,7 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import LEFT, Checkbutton, Entry, Label, Tk, Frame, Button, messagebox, BooleanVar, X, RIGHT, BOTH
+from tkinter import LEFT, Checkbutton, Entry, Label, Tk, Frame, Button, messagebox, BooleanVar, StringVar, X, RIGHT, BOTH
 from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
@@ -63,6 +63,29 @@ class MainForm(Frame):
         self.chbtn_auth = Checkbutton(master=self.frm_body, text="Авторизоваться", variable=self.needauth)
         self.chbtn_auth.grid(row=2, column=0, sticky="w")
         
+        # Поля Логин и Пароль
+        self.login = StringVar()
+        self.passwd = StringVar()
+        self.lbl_login = Label(master=self.frm_body, text="Логин")
+        self.ent_login = Entry(master=self.frm_body, width=50, textvariable=self.login)
+     
+        self.lbl_login.grid(row=3, column=0, sticky="w")
+        self.ent_login.grid(row=3, column=1)
+
+        self.lbl_passwd = Label(master=self.frm_body, text="Пароль")
+        self.ent_passwd = Entry(master=self.frm_body, width=50, textvariable=self.passwd)
+     
+        self.lbl_passwd.grid(row=4, column=0, sticky="w")
+        self.ent_passwd.grid(row=4, column=1)
+
+        # Создает ярлык и текстовое поле для ввода начальной страницы.
+        self.lbl_starturl = Label(master=self.frm_body, text="Начальная страница", )
+        self.ent_starturl = Entry(master=self.frm_body, width=50)
+        self.ent_starturl.insert(0, starturl)
+        # Размещает виджеты на вторую строку сетки
+        self.lbl_starturl.grid(row=1, column=0, sticky="w")
+        self.ent_starturl.grid(row=1, column=1)
+
         # Подвал с кнопками
         self.frm_footer = Frame(self)
         self.frm_footer.pack(fill=X, ipadx=5, ipady=5)
