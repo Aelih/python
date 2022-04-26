@@ -73,7 +73,7 @@ class MainForm(Frame):
         self.ent_login.grid(row=3, column=1)
 
         self.lbl_passwd = Label(master=self.frm_body, text="Пароль")
-        self.ent_passwd = Entry(master=self.frm_body, width=50, textvariable=self.passwd, state=DISABLED)
+        self.ent_passwd = Entry(master=self.frm_body, show='*', width=50, textvariable=self.passwd, state=DISABLED)
      
         self.lbl_passwd.grid(row=4, column=0, sticky="w")
         self.ent_passwd.grid(row=4, column=1)
