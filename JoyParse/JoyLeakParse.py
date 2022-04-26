@@ -8,8 +8,8 @@ from tkinter import Checkbutton, Entry, Label, Tk, Frame, Button, messagebox, Bo
 from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
-starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
-#starturl = "http://joyreactor.cc/tag/%D0%9F%D0%BE%D1%80%D0%BD%D0%BE" #prn
+#starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
+starturl = "http://joyreactor.cc/tag/%D0%9F%D0%BE%D1%80%D0%BD%D0%BE" #prn
 dataleaklinks = []
 sleeptime = 1
 PagesRange = 20
@@ -116,7 +116,7 @@ class MainForm(Frame):
     # Чтение и подготовка страницы по URL
     def ReadPageSoup(self, pageUrl):
         if self.needauth.get():
-            Startpage = requests.get(pageUrl, auth=(self.login, self.passwd))
+            Startpage = requests.get(pageUrl, auth=(self.login.get(), self.passwd.get()))
         else:
             Startpage = requests.get(pageUrl)   
         sleep(sleeptime)
@@ -157,7 +157,7 @@ class MainForm(Frame):
 
             for datapostlink in datapostlinks:
                 if self.needauth.get():
-                    respost = requests.get(datapostlink, auth=(self.login, self.passwd))
+                    respost = requests.get(datapostlink, auth=(self.login.get(), self.passwd.get()))
                 else: 
                     respost = requests.get(datapostlink)
                 sleep(sleeptime)
