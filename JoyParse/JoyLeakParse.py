@@ -4,7 +4,7 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import LEFT, Entry, Label, Tk, Frame, Button, messagebox, PhotoImage, X, RIGHT, BOTH
+from tkinter import LEFT, Checkbutton, Entry, Label, Tk, Frame, Button, messagebox, BooleanVar, X, RIGHT, BOTH
 from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
@@ -47,7 +47,7 @@ class MainForm(Frame):
         # Использует менеджер геометрии grid для размещения ярлыка и
         # однострочного поля для ввода текста в первый и второй столбец
         # первой строки сетки.
-        self.lbl_pagesQty.grid(row=0, column=0, sticky="e")
+        self.lbl_pagesQty.grid(row=0, column=0, sticky="w")
         self.ent_pagesQty.grid(row=0, column=1)
 
         # Создает ярлык и текстовое поле для ввода начальной страницы.
@@ -55,9 +55,15 @@ class MainForm(Frame):
         self.ent_starturl = Entry(master=self.frm_body, width=50)
         self.ent_starturl.insert(0, starturl)
         # Размещает виджеты на вторую строку сетки
-        self.lbl_starturl.grid(row=1, column=0, sticky="e")
+        self.lbl_starturl.grid(row=1, column=0, sticky="w")
         self.ent_starturl.grid(row=1, column=1)
+
+        # Флажок авторизации
+        self.needauth = BooleanVar()
+        self.chbtn_auth = Checkbutton(master=self.frm_body, text="Авторизоваться", variable=self.needauth)
+        self.chbtn_auth.grid(row=2, column=0, sticky="w")
         
+        # Подвал с кнопками
         self.frm_footer = Frame(self)
         self.frm_footer.pack(fill=X, ipadx=5, ipady=5)
         
