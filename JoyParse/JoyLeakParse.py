@@ -114,7 +114,10 @@ class MainForm(Frame):
 
     # Чтение и подготовка страницы по URL
     def ReadPageSoup(self, pageUrl):
-        Startpage = requests.get(pageUrl)
+        if self.needauth.get():
+            Startpage = requests.get(pageUrl, auth=(self.login, self.passwd))
+        else:
+            Startpage = requests.get(pageUrl)   
         sleep(sleeptime)
         SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
         return SoupStartpage
@@ -152,7 +155,10 @@ class MainForm(Frame):
                 datapostlinks.append(postlink)
 
             for datapostlink in datapostlinks:
-                respost = requests.get(datapostlink)
+                if self.needauth.get():
+                    respost = requests.get(datapostlink, auth=(self.login, self.passwd))
+                else: 
+                    respost = requests.get(datapostlink)
                 sleep(sleeptime)
                 soup = BeautifulSoup(respost.text, "html.parser")
                 comments = soup.findAll('div', class_='comment')
