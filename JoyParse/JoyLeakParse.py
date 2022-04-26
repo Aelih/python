@@ -101,7 +101,7 @@ class MainForm(Frame):
 
     # Открыть доступ к логину и паролю
     def CheckButton_Change(self):
-        if self.needauth: 
+        if self.needauth.get(): 
             self.ent_login['state'] = NORMAL
             self.ent_passwd['state'] = NORMAL
         else:
