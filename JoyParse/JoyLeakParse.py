@@ -4,12 +4,11 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import Checkbutton, Entry, Label, Tk, Frame, Button, messagebox, BooleanVar, StringVar, LEFT, NORMAL, DISABLED, X, RIGHT, BOTH
+from tkinter import Entry, Label, Tk, Frame, Button, messagebox, LEFT, X, RIGHT, BOTH
 from tkinter.ttk import Style
 
 stdurl = "http://joyreactor.cc"
-#starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
-starturl = "http://joyreactor.cc/tag/%D0%9F%D0%BE%D1%80%D0%BD%D0%BE" #prn
+starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
 dataleaklinks = []
 sleeptime = 1
 PagesRange = 20
@@ -57,27 +56,7 @@ class MainForm(Frame):
         self.ent_starturl.insert(0, starturl)
         # Размещает виджеты на вторую строку сетки
         self.lbl_starturl.grid(row=1, column=0, sticky="w")
-        self.ent_starturl.grid(row=1, column=1)
-
-        # Флажок авторизации
-        self.needauth = BooleanVar()
-        self.chbtn_auth = Checkbutton(master=self.frm_body, text="Авторизоваться", variable=self.needauth, command=self.CheckButton_Change)
-        self.chbtn_auth.grid(row=2, column=0, sticky="w")
-        
-        # Поля Логин и Пароль
-        self.login = StringVar()
-        self.passwd = StringVar()
-        self.lbl_login = Label(master=self.frm_body, text="Логин")
-        self.ent_login = Entry(master=self.frm_body, width=50, textvariable=self.login, state=DISABLED)
-     
-        self.lbl_login.grid(row=3, column=0, sticky="w")
-        self.ent_login.grid(row=3, column=1)
-
-        self.lbl_passwd = Label(master=self.frm_body, text="Пароль")
-        self.ent_passwd = Entry(master=self.frm_body, show='*', width=50, textvariable=self.passwd, state=DISABLED)
-     
-        self.lbl_passwd.grid(row=4, column=0, sticky="w")
-        self.ent_passwd.grid(row=4, column=1)
+        self.ent_starturl.grid(row=1, column=1)   
 
         # Создает ярлык и текстовое поле для ввода начальной страницы.
         self.lbl_starturl = Label(master=self.frm_body, text="Начальная страница", )
@@ -98,16 +77,7 @@ class MainForm(Frame):
         self.btn_run.pack(side=RIGHT, ipadx=10) 
 
         self.btn_about = Button(master=self.frm_footer, text="?", command=self.About, bg="#83c795")
-        self.btn_about.pack(side=LEFT, padx=10)  
-
-    # Открыть доступ к логину и паролю
-    def CheckButton_Change(self):
-        if self.needauth.get(): 
-            self.ent_login['state'] = NORMAL
-            self.ent_passwd['state'] = NORMAL
-        else:
-            self.ent_login['state'] = DISABLED
-            self.ent_passwd['state'] = DISABLED
+        self.btn_about.pack(side=LEFT, padx=10)
 
     # Окно "О программе"
     def About(Self):
@@ -155,11 +125,8 @@ class MainForm(Frame):
                 postlink = stdurl+post.find('a', class_='link').get('href')
                 datapostlinks.append(postlink)
 
-            for datapostlink in datapostlinks:
-                if self.needauth.get():
-                    respost = requests.get(datapostlink, auth=(self.login.get(), self.passwd.get()))
-                else: 
-                    respost = requests.get(datapostlink)
+            for datapostlink in datapostlinks:  
+                respost = requests.get(datapostlink)
                 sleep(sleeptime)
                 soup = BeautifulSoup(respost.text, "html.parser")
                 comments = soup.findAll('div', class_='comment')
