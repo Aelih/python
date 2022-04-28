@@ -85,10 +85,7 @@ class MainForm(Frame):
 
     # Чтение и подготовка страницы по URL
     def ReadPageSoup(self, pageUrl):
-        if self.needauth.get():
-            Startpage = requests.get(pageUrl, auth=(self.login.get(), self.passwd.get()))
-        else:
-            Startpage = requests.get(pageUrl)   
+        Startpage = requests.get(pageUrl)   
         sleep(sleeptime)
         SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
         return SoupStartpage
