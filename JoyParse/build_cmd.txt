@@ -1,1 +1,0 @@
-pyinstaller JoyParse/JoyLeakParse.py --onefile --noconsole --icon=JoyParse/Tux.ico --add-data "JoyParse/tux.png;."
