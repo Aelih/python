@@ -6,66 +6,50 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>321</width>
+    <height>241</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>321</width>
+    <height>241</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string comment="тестовое" extracomment="by Aelih">MainWindow</string>
+   <string>SteamApi</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>10</y>
-      <width>231</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
-    </property>
-    <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:16pt; font-weight:600;&quot;&gt;ПРИВЕТ!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-    </property>
-    <property name="textFormat">
-     <enum>Qt::MarkdownText</enum>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>120</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Жмяк!</string>
-    </property>
-   </widget>
-   <widget class="QTableView" name="tableView">
+   <widget class="QLineEdit" name="lineEdit_apikey">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>180</y>
-      <width>781</width>
-      <height>371</height>
+      <y>10</y>
+      <width>301</width>
+      <height>20</height>
      </rect>
+    </property>
+    <property name="placeholderText">
+     <string>Введите steam api ключ</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_connect">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>162</y>
+      <width>301</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Connect</string>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>
@@ -74,7 +58,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>321</width>
      <height>21</height>
     </rect>
    </property>
