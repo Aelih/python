@@ -49,6 +49,6 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", "тестовое"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", "Testing"))
         self.label.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:16pt; font-weight:600;\">ПРИВЕТ!</span></p></body></html>"))
-        self.pushButton.setText(_translate("MainWindow", "Жмяк!"))
+        self.pushButton.setText(_translate("MainWindow", "PRESS!"))
