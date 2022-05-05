@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>Парсер Joyreactor</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Tux.ico</normaloff>Tux.ico</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label">
     <property name="geometry">
