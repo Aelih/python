@@ -27,6 +27,13 @@ class MainWindow(QtWidgets.QMainWindow):
          # подключение клик-сигнал к слоту ParseComments
         self.ui.pushButton_Run.clicked.connect(self.ParseComments)
 
+    # Инициализация progress bar
+    def ProgressBarInit(self, PagesRange):
+        self.ui.progressBar.setValue(0)
+        # self.ui.progressBar.setMinimum = 0
+        # self.ui.progressBar.setMaximum = PagesRange
+        self.ui.progressBar.setRange(0, PagesRange)
+
     # Чтение и подготовка страницы по URL
     def ReadPageSoup(self, pageUrl):
         Startpage = requests.get(pageUrl)   
@@ -50,9 +57,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Разбор комментариев
     def ParseComments(self):
-        #Обновляем переменные забирая значения из окна
+        # Обновляем переменные забирая значения из окна
         PagesRange = int(self.ui.lineEdit_PagesQty.text())
         starturl = self.ui.lineEdit_StartUrl.text()
+
+        # Подготовка progress bar
+        self.ProgressBarInit(PagesRange)
 
         # Читает начальную страницу
         SoupStartpage = self.ReadPageSoup(starturl)
@@ -82,6 +92,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # Читает следующую страницу (кнопка Вперед)
             SoupStartpage = self.ReadPageSoup(NextPageUrl)
+            self.ui.progressBar.setValue(i+1)
 
         self.SaveToCsv()      
 
