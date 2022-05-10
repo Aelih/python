@@ -27,6 +27,12 @@ class MainWindow(QtWidgets.QMainWindow):
          # подключение клик-сигнал к слоту ParseComments
         self.ui.pushButton_Run.clicked.connect(self.ParseComments)
 
+    # Добавление элемента в список
+    def AddListElement(self, urltext):
+        item = QtWidgets.QListWidgetItem()
+        item.setText(urltext)
+        self.ui.listWidget.addItem(item)
+
     # Инициализация progress bar
     def ProgressBarInit(self, PagesRange):
         self.ui.progressBar.setValue(0)
@@ -89,12 +95,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     for ref in refs:
                         if self.CorrectUrl(ref.text) == True:
                             dataleaklinks.append([ref.text, datapostlink])
+                            self.AddListElement(ref.text)
 
             # Читает следующую страницу (кнопка Вперед)
             SoupStartpage = self.ReadPageSoup(NextPageUrl)
             self.ui.progressBar.setValue(i+1)
 
-        self.SaveToCsv()      
+        self.SaveToCsv()
 
 
 App = QtWidgets.QApplication([])
