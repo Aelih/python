@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from MainFormDesign import Ui_MainWindow # импорт сгенеренного файла
 import sys
 import requests
@@ -16,29 +16,18 @@ sleeptime = 1
 PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 
-class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        # заполнение полей на форме
-        self.ui.lineEdit_PagesQty.setText(str(PagesRange))
-        self.ui.lineEdit_StartUrl.setText(starturl)
-         # подключение клик-сигнал к слоту ParseComments
-        self.ui.pushButton_Run.clicked.connect(self.ParseComments)
 
-    # Добавление элемента в список
-    def AddListElement(self, urltext):
-        item = QtWidgets.QListWidgetItem()
-        item.setText(urltext)
-        self.ui.listWidget.addItem(item)
-
-    # Инициализация progress bar
-    def ProgressBarInit(self, PagesRange):
-        self.ui.progressBar.setValue(0)
-        # self.ui.progressBar.setMinimum = 0
-        # self.ui.progressBar.setMaximum = PagesRange
-        self.ui.progressBar.setRange(0, PagesRange)
+# Объект, отправленный в отдельный поток
+class BrowserHandler(QtCore.QObject):
+    running = False
+    RequestLoop = QtCore.pyqtSignal(str, str, int)
+    
+     # Проверка на корректность URL
+    def CorrectUrl(self, commenttext):
+        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('reactor') == -1:
+            return True
+        else:
+            return False
 
     # Чтение и подготовка страницы по URL
     def ReadPageSoup(self, pageUrl):
@@ -47,30 +36,9 @@ class MainWindow(QtWidgets.QMainWindow):
         SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
         return SoupStartpage
 
-    # Проверка на корректность URL
-    def CorrectUrl(self, commenttext):
-        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('reactor') == -1:
-            return True
-        else:
-            return False
-
-    # Сохраняем таблицу в CSV через pandas
-    def SaveToCsv(self):
-        header = ['link', 'post']
-        df = pd.DataFrame(dataleaklinks, columns=header)
-        df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
-        QtWidgets.QMessageBox.information(self, "Готово!", "Файл находится тут: "+ desktoppath+"\leaked.csv")
-
-    # Разбор комментариев
-    def ParseComments(self):
-        # Обновляем переменные забирая значения из окна
-        PagesRange = int(self.ui.lineEdit_PagesQty.text())
-        starturl = self.ui.lineEdit_StartUrl.text()
-
-        # Подготовка progress bar
-        self.ProgressBarInit(PagesRange)
-
-        # Читает начальную страницу
+    # метод выполняющий алгоритм в отдельном потоке
+    def run(self):
+         # Читает начальную страницу
         SoupStartpage = self.ReadPageSoup(starturl)
 
         for i in range(PagesRange):
@@ -94,14 +62,72 @@ class MainWindow(QtWidgets.QMainWindow):
 
                     for ref in refs:
                         if self.CorrectUrl(ref.text) == True:
-                            dataleaklinks.append([ref.text, datapostlink])
-                            self.AddListElement(ref.text)
+                            self.RequestLoop.emit(ref.text, datapostlink, i)
 
             # Читает следующую страницу (кнопка Вперед)
             SoupStartpage = self.ReadPageSoup(NextPageUrl)
-            self.ui.progressBar.setValue(i+1)
 
-        self.SaveToCsv()
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        # заполнение полей на форме
+        self.ui.lineEdit_PagesQty.setText(str(PagesRange))
+        self.ui.lineEdit_StartUrl.setText(starturl)
+        # подключение клик-сигнал к слоту ParseComments
+        self.ui.pushButton_Run.clicked.connect(self.ParseComments)
+
+        # Создание потока
+        self.thread = QtCore.QThread()
+        # Создание объекта, который будет отправлен в другой поток
+        self.browserHandler = BrowserHandler()
+        # Отправка объекта в рабочий поток
+        self.browserHandler.moveToThread(self.thread)
+        # Соединение сигналов объекта к слотам в Основном GUI потоке
+        self.browserHandler.RequestLoop.connect(self.ResultFixation)
+        # Соединение сигнала Started с методом Run в другом потоке
+        self.thread.started.connect(self.browserHandler.run)
+
+    @QtCore.pyqtSlot(str, str, int)
+    def ResultFixation(self, urltext, urlpost, i):
+        dataleaklinks.append([urltext, urlpost])
+        self.AddListElement(urltext)
+        self.ui.progressBar.setValue(i+1)
+
+    # Добавление элемента в список
+    def AddListElement(self, urltext):
+        item = QtWidgets.QListWidgetItem()
+        item.setText(urltext)
+        self.ui.listWidget.addItem(item)
+
+    # Инициализация progress bar
+    def ProgressBarInit(self, PagesRange):
+        self.ui.progressBar.setValue(0)
+        # self.ui.progressBar.setMinimum = 0
+        # self.ui.progressBar.setMaximum = PagesRange
+        self.ui.progressBar.setRange(0, PagesRange)
+
+    # Сохраняем таблицу в CSV через pandas
+    def SaveToCsv(self):
+        header = ['link', 'post']
+        df = pd.DataFrame(dataleaklinks, columns=header)
+        df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
+        QtWidgets.QMessageBox.information(self, "Готово!", "Файл находится тут: "+ desktoppath+"\leaked.csv")
+
+    # Разбор комментариев
+    def ParseComments(self):
+        # Обновляем переменные забирая значения из окна
+        PagesRange = int(self.ui.lineEdit_PagesQty.text())
+        starturl = self.ui.lineEdit_StartUrl.text()
+
+        # Подготовка progress bar
+        self.ProgressBarInit(PagesRange)
+
+        # Старт потока
+        self.thread.start()
+        
+        # self.SaveToCsv()
 
 
 App = QtWidgets.QApplication([])
