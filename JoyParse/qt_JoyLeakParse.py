@@ -20,7 +20,8 @@ desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 # Объект, отправленный в отдельный поток
 class BrowserHandler(QtCore.QObject):
     running = False
-    RequestLoop = QtCore.pyqtSignal(str, str, int)
+    RequestLoop = QtCore.pyqtSignal(str, str)
+    BarIterator = QtCore.pyqtSignal(int)
     
      # Проверка на корректность URL
     def CorrectUrl(self, commenttext):
@@ -62,11 +63,14 @@ class BrowserHandler(QtCore.QObject):
 
                     for ref in refs:
                         if self.CorrectUrl(ref.text) == True:
-                            self.RequestLoop.emit(ref.text, datapostlink, i)
+                            self.RequestLoop.emit(ref.text, datapostlink)
+                
+            self.BarIterator.emit(i)
 
             # Читает следующую страницу (кнопка Вперед)
             SoupStartpage = self.ReadPageSoup(NextPageUrl)
 
+# Инициализация главного окна
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -86,13 +90,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.browserHandler.moveToThread(self.thread)
         # Соединение сигналов объекта к слотам в Основном GUI потоке
         self.browserHandler.RequestLoop.connect(self.ResultFixation)
+        self.browserHandler.BarIterator.connect(self.ProgressBarIterator)
         # Соединение сигнала Started с методом Run в другом потоке
         self.thread.started.connect(self.browserHandler.run)
 
-    @QtCore.pyqtSlot(str, str, int)
-    def ResultFixation(self, urltext, urlpost, i):
+    # Метод-слот, срабатывающий при сигнале с другого потока
+    @QtCore.pyqtSlot(str, str)
+    def ResultFixation(self, urltext, urlpost):
         dataleaklinks.append([urltext, urlpost])
         self.AddListElement(urltext)
+
+    @QtCore.pyqtSlot(int)
+    def ProgressBarIterator(self, i):
         self.ui.progressBar.setValue(i+1)
 
     # Добавление элемента в список
