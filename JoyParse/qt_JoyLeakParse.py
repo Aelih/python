@@ -7,6 +7,7 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
+import webbrowser
 
 stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
@@ -15,6 +16,7 @@ dataleaklinks = []
 sleeptime = 1
 PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
+chromepath = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s --incognito"
 
 
 # Объект, отправленный в отдельный поток
@@ -81,6 +83,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.lineEdit_StartUrl.setText(starturl)
         # подключение клик-сигнал к слоту ParseComments
         self.ui.pushButton_Run.clicked.connect(self.ParseComments)
+        self.ui.listWidget.itemClicked.connect(self.OpenClickedItem)
 
         # Создание потока
         self.thread = QtCore.QThread()
@@ -137,6 +140,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.thread.start()
         
         # self.SaveToCsv()
+
+    def OpenClickedItem(self, item):
+        webbrowser.get(chromepath).open(item.text())
 
 
 App = QtWidgets.QApplication([])
