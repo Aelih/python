@@ -4,4 +4,4 @@
 /Pipfile
 /Pipfile.lock
 /python.ipynb
-/JoyParse/__pycache__
+JoyParse/__pycache__/
