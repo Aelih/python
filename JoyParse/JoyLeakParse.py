@@ -109,7 +109,8 @@ class MainForm(Frame):
     def ParseComments(self):
         #Обновляем переменные забирая значения из окна
         PagesRange = int(self.ent_pagesQty.get())
-
+        starturl = self.ent_starturl.get()
+        
         # Читает начальную страницу
         SoupStartpage = self.ReadPageSoup(starturl)
 
