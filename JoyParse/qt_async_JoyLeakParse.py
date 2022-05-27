@@ -1,13 +1,14 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from MainFormDesign import Ui_MainWindow # импорт сгенеренного файла
 import sys
-import requests
 from bs4 import BeautifulSoup
 from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
 import webbrowser
+import asyncio
+import aiohttp
 
 stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
@@ -18,59 +19,66 @@ PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 chromepath = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s --incognito"
 
+ # Проверка на корректность URL
+def CorrectUrl(self, commenttext):
+    if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('reactor') == -1:
+        return True
+    else:
+        return False
 
-# Объект, отправленный в отдельный поток
-class BrowserHandler(QtCore.QObject):
-    running = False
-    RequestLoop = QtCore.pyqtSignal(str, str)
-    BarIterator = QtCore.pyqtSignal(int)
+# Чтение и подготовка страницы по URL
+async def ReadPageSoup(pageUrl):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(pageUrl) as response:
+            StartpageText = await response.text()
+            SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
+            return SoupStartpage
+
+# Разбор комментариев
+async def ParseComments(self):
+    # Обновляем переменные забирая значения из окна
+    PagesRange = int(self.ui.lineEdit_PagesQty.text())
+    starturl = self.ui.lineEdit_StartUrl.text()
+
+    # Подготовка progress bar
+    #self.ProgressBarInit(PagesRange)
+
+    # Читает начальную страницу
+    tasks = []
+    tasks.append(asyncio.create_task(ReadPageSoup(starturl)))
+ 
+    SoupStartpage = self.ReadPageSoup(starturl)
+
+    for i in range(PagesRange):
+        NextPageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
+        posts = SoupStartpage.findAll('span', class_='link_wr')
+        datapostlinks = []
+
+        for post in posts:
+            postlink = stdurl+post.find('a', class_='link').get('href')
+            datapostlinks.append(postlink)
+
+        for datapostlink in datapostlinks:
+            respost = requests.get(datapostlink)
+            sleep(sleeptime)
+            soup = BeautifulSoup(respost.text, "html.parser")
+            comments = soup.findAll('div', class_='comment')
+
+            for comment in comments:
+                soupcomment = BeautifulSoup(str(comment), "html.parser")
+                refs = soupcomment.findAll('a')
+
+                for ref in refs:
+                    if self.CorrectUrl(ref.text) == True:
+                        self.RequestLoop.emit(ref.text, datapostlink)
+            
+        self.BarIterator.emit(i)
+
+        # Читает следующую страницу (кнопка Вперед)
+        SoupStartpage = self.ReadPageSoup(NextPageUrl)
     
-     # Проверка на корректность URL
-    def CorrectUrl(self, commenttext):
-        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('reactor') == -1:
-            return True
-        else:
-            return False
+    # self.SaveToCsv()
 
-    # Чтение и подготовка страницы по URL
-    def ReadPageSoup(self, pageUrl):
-        Startpage = requests.get(pageUrl)   
-        sleep(sleeptime)
-        SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
-        return SoupStartpage
-
-    # метод выполняющий алгоритм в отдельном потоке
-    def run(self):
-         # Читает начальную страницу
-        SoupStartpage = self.ReadPageSoup(starturl)
-
-        for i in range(PagesRange):
-            NextPageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
-            posts = SoupStartpage.findAll('span', class_='link_wr')
-            datapostlinks = []
-
-            for post in posts:
-                postlink = stdurl+post.find('a', class_='link').get('href')
-                datapostlinks.append(postlink)
-
-            for datapostlink in datapostlinks:
-                respost = requests.get(datapostlink)
-                sleep(sleeptime)
-                soup = BeautifulSoup(respost.text, "html.parser")
-                comments = soup.findAll('div', class_='comment')
-
-                for comment in comments:
-                    soupcomment = BeautifulSoup(str(comment), "html.parser")
-                    refs = soupcomment.findAll('a')
-
-                    for ref in refs:
-                        if self.CorrectUrl(ref.text) == True:
-                            self.RequestLoop.emit(ref.text, datapostlink)
-                
-            self.BarIterator.emit(i)
-
-            # Читает следующую страницу (кнопка Вперед)
-            SoupStartpage = self.ReadPageSoup(NextPageUrl)
 
 # Инициализация главного окна
 class MainWindow(QtWidgets.QMainWindow):
@@ -82,20 +90,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.lineEdit_PagesQty.setText(str(PagesRange))
         self.ui.lineEdit_StartUrl.setText(starturl)
         # подключение клик-сигнал к слоту ParseComments
-        self.ui.pushButton_Run.clicked.connect(self.ParseComments)
+        self.ui.pushButton_Run.clicked.connect(self.Run)
         self.ui.listWidget.itemClicked.connect(self.OpenClickedItem)
 
-        # Создание потока
-        self.thread = QtCore.QThread()
-        # Создание объекта, который будет отправлен в другой поток
-        self.browserHandler = BrowserHandler()
-        # Отправка объекта в рабочий поток
-        self.browserHandler.moveToThread(self.thread)
-        # Соединение сигналов объекта к слотам в Основном GUI потоке
-        self.browserHandler.RequestLoop.connect(self.ResultFixation)
-        self.browserHandler.BarIterator.connect(self.ProgressBarIterator)
-        # Соединение сигнала Started с методом Run в другом потоке
-        self.thread.started.connect(self.browserHandler.run)
+    def Run(self):
+        asyncio.run(ParseComments(self)) 
 
     # Метод-слот, срабатывающий при сигнале с другого потока
     @QtCore.pyqtSlot(str, str)
@@ -127,19 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
         df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
         QtWidgets.QMessageBox.information(self, "Готово!", "Файл находится тут: "+ desktoppath+"\leaked.csv")
 
-    # Разбор комментариев
-    def ParseComments(self):
-        # Обновляем переменные забирая значения из окна
-        PagesRange = int(self.ui.lineEdit_PagesQty.text())
-        starturl = self.ui.lineEdit_StartUrl.text()
-
-        # Подготовка progress bar
-        self.ProgressBarInit(PagesRange)
-
-        # Старт потока
-        self.thread.start()
-        
-        # self.SaveToCsv()
+   
 
     def OpenClickedItem(self, item):
         webbrowser.get(chromepath).open(item.text())
