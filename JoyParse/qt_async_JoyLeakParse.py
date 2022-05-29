@@ -14,7 +14,7 @@ stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
 #starturl = "http://joyreactor.cc/tag/%D0%9F%D0%BE%D1%80%D0%BD%D0%BE" #prn
 dataleaklinks = []
-sleeptime = 1
+sleeptime = 3
 PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 chromepath = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s --incognito"
@@ -29,6 +29,7 @@ async def CorrectUrl(commenttext):
 # Чтение и подготовка страницы по URL
 async def ReadPageSoup(pageUrl):
     async with aiohttp.ClientSession() as session:
+        sleep(sleeptime)
         async with session.get(pageUrl) as response:
             StartpageText = await response.text()
             SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
@@ -36,21 +37,20 @@ async def ReadPageSoup(pageUrl):
 
 async def get_URLs(pageUrl, PagesRange):
     urlList = []
-    urlList.append[pageUrl]
+    urlList.append(pageUrl)
 
     async with aiohttp.ClientSession() as session:
         for i in range(PagesRange):
+            sleep(sleeptime)
             async with session.get(pageUrl) as response:
                 StartpageText = await response.text()
                 SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
                 pageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
-                urlList.append[pageUrl]
+                urlList.append(pageUrl)
 
     return urlList
 
-async def get_links(url):
-    leakurllist = []
-
+async def get_postlinks(url):
     ParseTasks = []
     ParseTasks.append(asyncio.create_task(ReadPageSoup(url)))
 
@@ -64,24 +64,27 @@ async def get_links(url):
         postlink = stdurl+post.find('a', class_='link').get('href')
         datapostlinks.append(postlink)
 
-    for datapostlink in datapostlinks:
-        datapostlinkTasks = []
-        datapostlinkTasks.append(asyncio.create_task(ReadPageSoup(datapostlink)))
+    return datapostlinks
 
-        datapostlinkResult = await asyncio.gather(*datapostlinkTasks)
-        soup = datapostlinkResult[0]
+async def get_leakedurls(posturl):
+    leakurllist = []
+    datapostlinkTasks = []
+    datapostlinkTasks.append(asyncio.create_task(ReadPageSoup(posturl)))
 
-        comments = soup.findAll('div', class_='comment')
+    datapostlinkResult = await asyncio.gather(*datapostlinkTasks)
+    soup = datapostlinkResult[0]
 
-        for comment in comments:
-            soupcomment = BeautifulSoup(str(comment), "html.parser")
-            refs = soupcomment.findAll('a')
+    comments = soup.findAll('div', class_='comment')
 
-            for ref in refs:
-                if CorrectUrl(ref.text) == True:
-                    leakurllist.append(ref.text)
+    for comment in comments:
+        soupcomment = BeautifulSoup(str(comment), "html.parser")
+        refs = soupcomment.findAll('a')
 
-    return leakurllist     
+        for ref in refs:
+            if CorrectUrl(ref.text) == True:
+                leakurllist.append(ref.text)
+
+    return leakurllist      
 
 # Разбор комментариев
 async def ParseComments(self):
@@ -98,13 +101,19 @@ async def ParseComments(self):
 
     urlList = await asyncio.gather(*urlTasks) 
 
-    tasks = []
-    for urlElem in urlList:
-        for url in urlElem:
-            tasks.append(asyncio.create_task(get_links(url)))  
+    posttasks = []
+    for url in urlList[0]:
+        posttasks.append(asyncio.create_task(get_postlinks(url)))  
  
-    results = await asyncio.gather(*tasks)
+    listpostlinks = await asyncio.gather(*posttasks)
 
+    leaktasks = []
+    for elempostlink in listpostlinks:
+        for postlink in elempostlink:
+            leaktasks.append(asyncio.create_task(get_leakedurls(postlink)))
+
+    results = await asyncio.gather(*leaktasks)
+    
     for result in results:
         for leakurl in result:
             item = QtWidgets.QListWidgetItem()
