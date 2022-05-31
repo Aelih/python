@@ -29,32 +29,30 @@ async def CorrectUrl(commenttext):
         return False
 
 # Чтение и подготовка страницы по URL
-async def ReadPageSoup(pageUrl):
-    async with aiohttp.ClientSession() as session:
-        sleep(sleeptime)
-        async with session.get(pageUrl) as response:
-            StartpageText = await response.text()
-            SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
-            return SoupStartpage
+async def ReadPageSoup(session, pageUrl):
+    sleep(sleeptime)
+    async with session.get(url=pageUrl, headers=headers) as response:
+        StartpageText = await response.text()
+        SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
+        return SoupStartpage
 
-async def get_URLs(pageUrl, PagesRange):
+async def get_URLs(session, pageUrl, PagesRange):
     urlList = []
     urlList.append(pageUrl)
-
-    async with aiohttp.ClientSession() as session:
-        for i in range(PagesRange):
-            sleep(sleeptime)
-            async with session.get(pageUrl) as response:
-                StartpageText = await response.text()
-                SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
-                pageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
-                urlList.append(pageUrl)
+ 
+    for i in range(PagesRange):
+        sleep(sleeptime)
+        async with session.get(url=pageUrl, headers=headers) as response:
+            StartpageText = await response.text()
+            SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
+            pageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
+            urlList.append(pageUrl)
 
     return urlList
 
-async def get_postlinks(url):
+async def get_postlinks(session, url):
     ParseTasks = []
-    ParseTasks.append(asyncio.create_task(ReadPageSoup(url)))
+    ParseTasks.append(asyncio.create_task(ReadPageSoup(session, url)))
 
     Result = await asyncio.gather(*ParseTasks)
     SoupStartpage = Result[0]
@@ -68,10 +66,10 @@ async def get_postlinks(url):
 
     return datapostlinks
 
-async def get_leakedurls(posturl):
+async def get_leakedurls(session, posturl):
     leakurllist = []
     datapostlinkTasks = []
-    datapostlinkTasks.append(asyncio.create_task(ReadPageSoup(posturl)))
+    datapostlinkTasks.append(asyncio.create_task(ReadPageSoup(session, posturl)))
 
     datapostlinkResult = await asyncio.gather(*datapostlinkTasks)
     soup = datapostlinkResult[0]
@@ -96,33 +94,33 @@ async def ParseComments(self):
 
     # Подготовка progress bar
     #self.ProgressBarInit(PagesRange)
+    async with aiohttp.ClientSession() as session:
+        # Читает начальную страницу
+        urlTasks = []
+        urlTasks.append(asyncio.create_task(get_URLs(session, starturl, PagesRange)))
 
-    # Читает начальную страницу
-    urlTasks = []
-    urlTasks.append(asyncio.create_task(get_URLs(starturl, PagesRange)))
+        urlList = await asyncio.gather(*urlTasks) 
 
-    urlList = await asyncio.gather(*urlTasks) 
-
-    posttasks = []
-    for url in urlList[0]:
-        posttasks.append(asyncio.create_task(get_postlinks(url)))  
- 
-    listpostlinks = await asyncio.gather(*posttasks)
-
-    leaktasks = []
-    for elempostlink in listpostlinks:
-        for postlink in elempostlink:
-            leaktasks.append(asyncio.create_task(get_leakedurls(postlink)))
-
-    results = await asyncio.gather(*leaktasks)
+        posttasks = []
+        for url in urlList[0]:
+            posttasks.append(asyncio.create_task(get_postlinks(session, url)))  
     
-    for result in results:
-        for leakurl in result:
-            item = QtWidgets.QListWidgetItem()
-            item.setText(leakurl)
-            self.ui.listWidget.addItem(item)
-    
-    # self.SaveToCsv()
+        listpostlinks = await asyncio.gather(*posttasks)
+
+        leaktasks = []
+        for elempostlink in listpostlinks:
+            for postlink in elempostlink:
+                leaktasks.append(asyncio.create_task(get_leakedurls(session, postlink)))
+
+        results = await asyncio.gather(*leaktasks)
+        
+        for result in results:
+            for leakurl in result:
+                item = QtWidgets.QListWidgetItem()
+                item.setText(leakurl)
+                self.ui.listWidget.addItem(item)
+        
+        # self.SaveToCsv()
 
 
 # Инициализация главного окна
