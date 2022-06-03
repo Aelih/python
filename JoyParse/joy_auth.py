@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
+# https://www.youtube.com/watch?v=IEfQLbxHY_g
 session = requests.Session()
 
 link = "https://api.joyreactor.cc/graphql"
@@ -13,9 +14,13 @@ variables = {"query":"mutation Login($login: String!, $password: String!){login(
 header = {"accept": "*/*",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47",
             "origin":"http://joyreactor.cc",
-            "referer": "http://joyreactor.cc/",
-            "cookie": "joyreactor_api_session=eyJpdiI6IjBGMFIxdDQ2L0JYVDVldkZrU25xbWc9PSIsInZhbHVlIjoiZDUyY2JYNmNHOUtKWm42TDhvWWlqcnNObFRoWit2aWlMMDExV2pGQlRTa1VPdFc0RXZrRUplVW45SWx4N29KZWJUYXZPYXNNL3V3bC96YU1waVRvTmhVR0NKRXZmWjhRZlQzM2ZGTUdoMzVrQy9hOHE2ZlM5MnJlV2ZlVE1zMGUiLCJtYWMiOiI5ODM4NThlZjQ0Yzk5MDJiNWViMTkzMGE3ZTJmMDM4MzAyNDA5MTJmNDliNTJiNGViN2Y5MDQ5NzlmYmY0MjQ4IiwidGFnIjoiIn0%3D"}
+            "referer": "http://joyreactor.cc/"}
 
-response = requests.api.post(url=link, json=variables, headers=header)
+response = session.post(url=link, json=variables, headers=header)
 
-print(response.text, response.status_code)
+print(response.text, f"Response status {response.status_code}")
+
+profile = session.get(url="http://joyreactor.cc/user/"+login, headers=header)
+
+print(profile.text)
+
