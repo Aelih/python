@@ -16,7 +16,6 @@ header = {"accept": "*/*",
             "referer": "http://joyreactor.cc/",
             "cookie": "joyreactor_api_session=eyJpdiI6IjBGMFIxdDQ2L0JYVDVldkZrU25xbWc9PSIsInZhbHVlIjoiZDUyY2JYNmNHOUtKWm42TDhvWWlqcnNObFRoWit2aWlMMDExV2pGQlRTa1VPdFc0RXZrRUplVW45SWx4N29KZWJUYXZPYXNNL3V3bC96YU1waVRvTmhVR0NKRXZmWjhRZlQzM2ZGTUdoMzVrQy9hOHE2ZlM5MnJlV2ZlVE1zMGUiLCJtYWMiOiI5ODM4NThlZjQ0Yzk5MDJiNWViMTkzMGE3ZTJmMDM4MzAyNDA5MTJmNDliNTJiNGViN2Y5MDQ5NzlmYmY0MjQ4IiwidGFnIjoiIn0%3D"}
 
-# response = session.post(link, data=variables, headers=header).text
-response = requests.api.post(url=link, data=variables, headers=header)
+response = requests.api.post(url=link, json=variables, headers=header)
 
-print(response)
+print(response.text, response.status_code)
