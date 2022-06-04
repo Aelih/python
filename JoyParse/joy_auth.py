@@ -1,4 +1,3 @@
-from difflib import restore
 import requests
 import aiohttp
 
