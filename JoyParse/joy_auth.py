@@ -1,18 +1,19 @@
 import requests
 import aiohttp
 
-def syncAuthorize(login, passwd):
-    session = requests.Session()
+link = "https://api.joyreactor.cc/graphql"
 
-    link = "https://api.joyreactor.cc/graphql"
-
-    variables = {"query":"mutation Login($login: String!, $password: String!){login(name:$login,password:$password) {me {token}}}",
-                    "variables":{"login":login,"password":passwd}}
-
-    header = {"accept": "*/*",
+header = {"accept": "*/*",
                 "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47",
                 "origin":"http://joyreactor.cc",
                 "referer": "http://joyreactor.cc/"}
+
+def syncAuthorize(login, passwd):
+
+    variables = {"query":"mutation Login($login: String!, $password: String!){login(name:$login,password:$password) {me {token}}}",
+                    "variables":{"login":login,"password":passwd}}
+    
+    session = requests.Session()
 
     response = session.post(url=link, json=variables, headers=header)
 
@@ -24,16 +25,10 @@ def syncAuthorize(login, passwd):
     else:
         return [None, response.status_code] 
 
-async def asyncAuthorize(login, passwd):
-    link = "https://api.joyreactor.cc/graphql"
+async def asyncAuthorize(login, passwd):  
 
     variables = {"query":"mutation Login($login: String!, $password: String!){login(name:$login,password:$password) {me {token}}}",
                     "variables":{"login":login,"password":passwd}}
-
-    header = {"accept": "*/*",
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47",
-                "origin":"http://joyreactor.cc",
-                "referer": "http://joyreactor.cc/"}
  
     async with aiohttp.ClientSession() as session:
         async with session.post(url=link, json=variables, headers=header) as response:
