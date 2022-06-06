@@ -21,7 +21,7 @@ def syncAuthorize(login, passwd):
         if type(response.json().get('data')) == type(None):
             return [None, response.status_code]        
         else:    
-            return [response.json().get('data').get('login').get('me').get('token'), response.status_code]
+            return [response.json()["data"]["login"]["me"]["token"], response.status_code]
     else:
         return [None, response.status_code] 
 
@@ -37,7 +37,7 @@ async def asyncAuthorize(login, passwd):
                 if type(result[0].get('data')) == type(None):
                     return [None, result[1]]        
                 else:    
-                    return [result[0].get('data').get('login').get('me').get('token'), result[1]]
+                    return [result[0]["data"]["login"]["me"]["token"], result[1]]
             else:
                 return [None, result[1]]            
 
