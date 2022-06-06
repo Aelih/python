@@ -1,5 +1,5 @@
 import requests
-import aiohttp
+import httpx
 
 link = "https://api.joyreactor.cc/graphql"
 
@@ -29,15 +29,15 @@ async def asyncAuthorize(login, passwd):
 
     variables = {"query":"mutation Login($login: String!, $password: String!){login(name:$login,password:$password) {me {token}}}",
                     "variables":{"login":login,"password":passwd}}
- 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url=link, json=variables, headers=header) as response:
-            result = await response.json(), response.status 
-            if result[1] == 200:
-                if type(result[0].get('data')) == type(None):
-                    return [None, result[1]]        
-                else:    
-                    return [result[0]["data"]["login"]["me"]["token"], result[1]]
-            else:
-                return [None, result[1]]            
+  
+    async with httpx.AsyncClient() as client:
+        result = await client.post(url=link, json=variables, headers=header) 
+        if result.status_code == httpx.codes.OK:
+            jsonres = result.json()
+            if type(jsonres.get("data")) == type(None):
+                return [None, result.status_code]        
+            else:    
+                return [jsonres["data"]["login"]["me"]["token"], result.status_code]
+        else:
+            return [None, result.status_code]            
 

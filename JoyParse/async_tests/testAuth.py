@@ -7,11 +7,11 @@ async def AuthTry(login, passwd):
 
     result = await asyncio.gather(*Tasks)
 
-    if result[0][0] == None:
+    if result[0] == None:
         print("Problems with authorization. Please try again!")
-        print(f"Status {result[0][1]}")
+        print(f"Status {result[1]}")
     else:
-        print(result[0][0]) 
+        print(result[0]) 
 
 def syncAuthTry(login, passwd):
     result = auth.syncAuthorize(login, passwd)
