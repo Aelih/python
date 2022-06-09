@@ -32,7 +32,7 @@ async def CorrectUrl(commenttext):
 async def ReadPageSoup(client, pageUrl):
     sleep(sleeptime)
     response = await client.get(url=pageUrl, headers=headers)
-    StartpageText = response.text()
+    StartpageText = response.text
     SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
     return SoupStartpage
 
@@ -43,7 +43,7 @@ async def get_URLs(client, pageUrl, PagesRange):
     for i in range(PagesRange):
         sleep(sleeptime)
         response = await client.get(url=pageUrl, headers=headers)
-        StartpageText = response.text()
+        StartpageText = response.text
         SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
         pageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
         urlList.append(pageUrl)
