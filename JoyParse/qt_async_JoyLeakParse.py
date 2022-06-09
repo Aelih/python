@@ -81,7 +81,7 @@ async def get_leakedurls(client, posturl):
         refs = soupcomment.findAll('a')
 
         for ref in refs:
-            if CorrectUrl(ref.text) == True:
+            #if CorrectUrl(ref.text) == True:
                 leakurllist.append(ref.text)
 
     return leakurllist      
