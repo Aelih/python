@@ -8,7 +8,7 @@ import pandas as pd
 from os import path, environ
 import webbrowser
 import asyncio
-import aiohttp
+import httpx
 
 stdurl = "http://joyreactor.cc"
 starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
@@ -29,30 +29,30 @@ async def CorrectUrl(commenttext):
         return False
 
 # Чтение и подготовка страницы по URL
-async def ReadPageSoup(session, pageUrl):
+async def ReadPageSoup(client, pageUrl):
     sleep(sleeptime)
-    async with session.get(url=pageUrl, headers=headers) as response:
-        StartpageText = await response.text()
-        SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
-        return SoupStartpage
+    response = await client.get(url=pageUrl, headers=headers)
+    StartpageText = response.text()
+    SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
+    return SoupStartpage
 
-async def get_URLs(session, pageUrl, PagesRange):
+async def get_URLs(client, pageUrl, PagesRange):
     urlList = []
     urlList.append(pageUrl)
  
     for i in range(PagesRange):
         sleep(sleeptime)
-        async with session.get(url=pageUrl, headers=headers) as response:
-            StartpageText = await response.text()
-            SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
-            pageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
-            urlList.append(pageUrl)
+        response = await client.get(url=pageUrl, headers=headers)
+        StartpageText = response.text()
+        SoupStartpage = BeautifulSoup(StartpageText, "html.parser")
+        pageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
+        urlList.append(pageUrl)
 
     return urlList
 
-async def get_postlinks(session, url):
+async def get_postlinks(client, url):
     ParseTasks = []
-    ParseTasks.append(asyncio.create_task(ReadPageSoup(session, url)))
+    ParseTasks.append(asyncio.create_task(ReadPageSoup(client, url)))
 
     Result = await asyncio.gather(*ParseTasks)
     SoupStartpage = Result[0]
@@ -66,10 +66,10 @@ async def get_postlinks(session, url):
 
     return datapostlinks
 
-async def get_leakedurls(session, posturl):
+async def get_leakedurls(client, posturl):
     leakurllist = []
     datapostlinkTasks = []
-    datapostlinkTasks.append(asyncio.create_task(ReadPageSoup(session, posturl)))
+    datapostlinkTasks.append(asyncio.create_task(ReadPageSoup(client, posturl)))
 
     datapostlinkResult = await asyncio.gather(*datapostlinkTasks)
     soup = datapostlinkResult[0]
@@ -94,23 +94,23 @@ async def ParseComments(self):
 
     # Подготовка progress bar
     #self.ProgressBarInit(PagesRange)
-    async with aiohttp.ClientSession() as session:
+    async with httpx.AsyncClient() as client:
         # Читает начальную страницу
         urlTasks = []
-        urlTasks.append(asyncio.create_task(get_URLs(session, starturl, PagesRange)))
+        urlTasks.append(asyncio.create_task(get_URLs(client, starturl, PagesRange)))
 
         urlList = await asyncio.gather(*urlTasks) 
 
         posttasks = []
         for url in urlList[0]:
-            posttasks.append(asyncio.create_task(get_postlinks(session, url)))  
+            posttasks.append(asyncio.create_task(get_postlinks(client, url)))  
     
         listpostlinks = await asyncio.gather(*posttasks)
 
         leaktasks = []
         for elempostlink in listpostlinks:
             for postlink in elempostlink:
-                leaktasks.append(asyncio.create_task(get_leakedurls(session, postlink)))
+                leaktasks.append(asyncio.create_task(get_leakedurls(client, postlink)))
 
         results = await asyncio.gather(*leaktasks)
         
