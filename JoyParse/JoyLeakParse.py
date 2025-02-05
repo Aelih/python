@@ -9,7 +9,6 @@ from tkinter.ttk import Style
 
 stdurl = "https://old.reactor.cc" # на старой верстке искать проще
 starturl = "https://old.reactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" # ert
-sleeptime = 1
 PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
 
@@ -87,11 +86,8 @@ class MainForm(Frame):
         return BeautifulSoup(response.text, "html.parser")
 
     # Проверка на корректность URL
-    def CorrectUrl(self, commenttext):
-        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('reactor') == -1:
-            return True
-        else:
-            return False
+    def CorrectUrl(self, commenttext):        
+        return url(commenttext) and ('instagram' not in commenttext) and ('reactor' not in commenttext)
 
     # Сохраняем таблицу в CSV через pandas
     def SaveToCsv(self):
@@ -154,7 +150,7 @@ class MainForm(Frame):
                     response.raise_for_status()
                 except requests.RequestException as e:
                     messagebox.showerror("Ошибка", f"Не удалось загрузить страницу: {e}")
-                    return None
+                    continue  # Переход к следующему datapostlink
                 
                 soup = BeautifulSoup(response.text, "html.parser")
                 comments = soup.findAll('div', class_='post_comment_list')
@@ -168,6 +164,8 @@ class MainForm(Frame):
 
             # Читает следующую страницу (кнопка Вперед)
             SoupStartpage = self.ReadPageSoup(NextPageUrl)
+            if SoupStartpage is None:
+                break
 
         self.SaveToCsv()
 
