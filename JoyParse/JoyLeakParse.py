@@ -7,9 +7,8 @@ from os import path, environ
 from tkinter import Entry, Label, Tk, Frame, Button, messagebox, LEFT, X, RIGHT, BOTH
 from tkinter.ttk import Style
 
-stdurl = "http://joyreactor.cc"
-starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
-dataleaklinks = []
+stdurl = "https://old.reactor.cc" # на старой верстке искать проще
+starturl = "https://old.reactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" # ert
 sleeptime = 1
 PagesRange = 20
 desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
@@ -19,6 +18,7 @@ class MainForm(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
+        self.dataleaklinks = []  # Инициализируем список для накопления результатов
         self.initUI()
 
     def initUI(self):
@@ -29,6 +29,7 @@ class MainForm(Frame):
         self.addElements()
 
     def addElements(self):
+        # Создаем верхнюю часть формы (заголовок)
         # Создается новая рамка `frm_header` для заголовка.
         self.frm_header = Frame(self)
         # Помещает рамку в окно приложения.
@@ -38,27 +39,18 @@ class MainForm(Frame):
         self.lbl_greeting = Label(master=self.frm_header, text="Привет! В разработке...")
         self.lbl_greeting.pack()
 
+        # Создаем основное тело формы
         self.frm_body = Frame(self)
         self.frm_body.pack()
 
+        # Виджеты для ввода количества страниц
         self.lbl_pagesQty = Label(master=self.frm_body, text="Кол-во читаемых страниц")
         self.ent_pagesQty = Entry(master=self.frm_body, width=50)
         self.ent_pagesQty.insert(0, PagesRange)
-        # Использует менеджер геометрии grid для размещения ярлыка и
-        # однострочного поля для ввода текста в первый и второй столбец
-        # первой строки сетки.
         self.lbl_pagesQty.grid(row=0, column=0, sticky="w")
         self.ent_pagesQty.grid(row=0, column=1)
 
-        # Создает ярлык и текстовое поле для ввода начальной страницы.
-        self.lbl_starturl = Label(master=self.frm_body, text="Начальная страница", )
-        self.ent_starturl = Entry(master=self.frm_body, width=50)
-        self.ent_starturl.insert(0, starturl)
-        # Размещает виджеты на вторую строку сетки
-        self.lbl_starturl.grid(row=1, column=0, sticky="w")
-        self.ent_starturl.grid(row=1, column=1)   
-
-        # Создает ярлык и текстовое поле для ввода начальной страницы.
+        # Виджеты для ввода начальной страницы
         self.lbl_starturl = Label(master=self.frm_body, text="Начальная страница", )
         self.ent_starturl = Entry(master=self.frm_body, width=50)
         self.ent_starturl.insert(0, starturl)
@@ -80,15 +72,19 @@ class MainForm(Frame):
         self.btn_about.pack(side=LEFT, padx=10)
 
     # Окно "О программе"
-    def About(Self):
+    def About(self):
         messagebox.showinfo("О программе", "Сделано Aelih. Спасибо за использование :-)")
 
     # Чтение и подготовка страницы по URL
     def ReadPageSoup(self, pageUrl):
-        Startpage = requests.get(pageUrl)   
-        sleep(sleeptime)
-        SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
-        return SoupStartpage
+        try:
+            response = requests.get(pageUrl)
+            response.raise_for_status()  # Генерирует исключение для неудачного кода ответа
+        except requests.RequestException as e:
+            messagebox.showerror("Ошибка", f"Не удалось загрузить страницу:\n{e}")
+            return None  # Возвращаем None, чтобы сигнализировать о проблеме
+
+        return BeautifulSoup(response.text, "html.parser")
 
     # Проверка на корректность URL
     def CorrectUrl(self, commenttext):
@@ -100,42 +96,75 @@ class MainForm(Frame):
     # Сохраняем таблицу в CSV через pandas
     def SaveToCsv(self):
         header = ['link', 'post']
-        df = pd.DataFrame(dataleaklinks, columns=header)
-        df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
-        messagebox.showinfo("Готово!", "Файл найдёшь здесь: " +
-                            desktoppath+'\leaked.csv')
+        filepath = path.join(desktoppath, 'leaked.csv')
+
+        df = pd.DataFrame(self.dataleaklinks, columns=header)
+        df.to_csv(filepath, sep=';', encoding='utf8')
+
+        messagebox.showinfo("Готово!", "Файл найдёшь здесь: " + filepath)
 
     # Разбор комментариев
-    def ParseComments(self):
+    def ParseComments(self):    
+        # Сбрасываем список при каждом новом запуске парсинга
+        self.dataleaklinks = []
+
         #Обновляем переменные забирая значения из окна
         PagesRange = int(self.ent_pagesQty.get())
         starturl = self.ent_starturl.get()
         
-        # Читает начальную страницу
+        # Читаем начальную страницу
         SoupStartpage = self.ReadPageSoup(starturl)
+        if SoupStartpage is None:
+            # Если не удалось загрузить начальную страницу, прерываем парсинг
+            return
 
         for i in range(PagesRange):
-            NextPageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
-            posts = SoupStartpage.findAll('span', class_='link_wr')
+            # Ищем ссылку "Вперед"
+            next_link = SoupStartpage.find('a', class_='next')
+            if next_link and next_link.get('href'):
+                NextPageUrl = stdurl + next_link.get('href')
+            else:
+                # Если ссылка не найдена, информируем пользователя и прерываем цикл
+                messagebox.showerror("Ошибка", "Не найдена ссылка 'Вперед'. Операция прервана.")
+                break    
+
+            posts = SoupStartpage.findAll('span', class_='manage')
             datapostlinks = []
 
             for post in posts:
-                postlink = stdurl+post.find('a', class_='link').get('href')
+                # Пытаемся найти тег <a> с классом "link"
+                link_tag = post.find('a', class_='link')
+                if not link_tag:
+                    # Если тег не найден переходим к следующему посту
+                    continue
+
+                # Получаем значение атрибута href
+                href = link_tag.get('href')
+                if not href:
+                    # Если атрибут отсутствует или пуст пропускаем пост
+                    continue
+                
+                # Если всё в порядке, формируем полный URL
+                postlink = stdurl + href
                 datapostlinks.append(postlink)
 
-            for datapostlink in datapostlinks:  
-                respost = requests.get(datapostlink)
-                sleep(sleeptime)
-                soup = BeautifulSoup(respost.text, "html.parser")
-                comments = soup.findAll('div', class_='comment')
+            for datapostlink in datapostlinks:
+                try:
+                    response = requests.get(datapostlink)
+                    response.raise_for_status()
+                except requests.RequestException as e:
+                    messagebox.showerror("Ошибка", f"Не удалось загрузить страницу: {e}")
+                    return None
+                
+                soup = BeautifulSoup(response.text, "html.parser")
+                comments = soup.findAll('div', class_='post_comment_list')
 
                 for comment in comments:
-                    soupcomment = BeautifulSoup(str(comment), "html.parser")
-                    refs = soupcomment.findAll('a')
+                    refs = comment.findAll('a')
 
                     for ref in refs:
                         if self.CorrectUrl(ref.text) == True:
-                            dataleaklinks.append([ref.text, datapostlink])
+                            self.dataleaklinks.append([ref.text, datapostlink])
 
             # Читает следующую страницу (кнопка Вперед)
             SoupStartpage = self.ReadPageSoup(NextPageUrl)
