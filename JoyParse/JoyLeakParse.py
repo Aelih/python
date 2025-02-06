@@ -7,12 +7,12 @@ from os import path, environ
 from tkinter import Entry, Label, Tk, Frame, Button, messagebox, LEFT, X, RIGHT, BOTH
 from tkinter.ttk import Style, Progressbar
 import threading
+from ctypes import wintypes, windll, create_unicode_buffer
 
 # Конфигурационные параметры
 stdurl = "https://old.reactor.cc"  # на старой верстке искать проще
 starturl = "https://old.reactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"  # ert
-PagesRange = 20
-desktoppath = path.join(environ['USERPROFILE'], 'Desktop')
+PagesRange = 20 
 
 # Основной класс приложения
 class MainForm(Frame):
@@ -88,8 +88,20 @@ class MainForm(Frame):
     def CorrectUrl(self, commenttext):
         return url(commenttext) and ('instagram' not in commenttext) and ('reactor' not in commenttext)
 
+    def get_desktop_path(self):
+        CSIDL_DESKTOPDIRECTORY = 0x10  # Константа для рабочего стола
+        MAX_PATH = 260
+        buf = create_unicode_buffer(MAX_PATH)
+        # SHGetFolderPathW возвращает 0 при успехе
+        result = windll.shell32.SHGetFolderPathW(None, CSIDL_DESKTOPDIRECTORY, None, 0, buf)
+        if result == 0:
+            return buf.value
+        else:
+            raise Exception("Не удалось получить путь к рабочему столу")
+
     # Сохранение результатов в CSV-файл через pandas
     def SaveToCsv(self):
+        desktoppath = self.get_desktop_path() 
         header = ['link', 'post']
         filepath = path.join(desktoppath, 'leaked.csv')
         df = pd.DataFrame(self.dataleaklinks, columns=header)
