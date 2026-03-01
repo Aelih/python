@@ -4,22 +4,22 @@ from validators import url
 from time import sleep
 import pandas as pd
 from os import path, environ
-from tkinter import Checkbutton, Entry, Label, Tk, Frame, Button, messagebox, BooleanVar, StringVar, LEFT, NORMAL, DISABLED, X, RIGHT, BOTH
-from tkinter.ttk import Style
+from tkinter import Entry, Label, Tk, Frame, Button, messagebox, LEFT, X, RIGHT, BOTH
+from tkinter.ttk import Style, Progressbar
+import threading
+from ctypes import wintypes, windll, create_unicode_buffer
 
-stdurl = "http://joyreactor.cc"
-starturl = "http://joyreactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0" #ert
-#starturl = "http://joyreactor.cc/tag/%D0%9F%D0%BE%D1%80%D0%BD%D0%BE" #prn
-dataleaklinks = []
-sleeptime = 1
-PagesRange = 20
-desktoppath = path.join((environ['USERPROFILE']), 'Desktop')
+# Конфигурационные параметры
+stdurl = "https://old.reactor.cc"  # на старой верстке искать проще
+starturl = "https://old.reactor.cc/tag/%D0%AD%D1%80%D0%BE%D1%82%D0%B8%D0%BA%D0%B0"  # ert
+PagesRange = 20 
 
-# Строим форму на tkinter
+# Основной класс приложения
 class MainForm(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
+        self.dataleaklinks = []  # Список для накопления результатов
         self.initUI()
 
     def initUI(self):
@@ -30,158 +30,166 @@ class MainForm(Frame):
         self.addElements()
 
     def addElements(self):
-        # Создается новая рамка `frm_header` для заголовка.
+        # Верхняя часть (заголовок)
         self.frm_header = Frame(self)
-        # Помещает рамку в окно приложения.
         self.frm_header.pack()
-        
-        # Создает ярлык и текстовок поле для ввода имени.
         self.lbl_greeting = Label(master=self.frm_header, text="Привет! В разработке...")
         self.lbl_greeting.pack()
 
+        # Основное тело формы
         self.frm_body = Frame(self)
         self.frm_body.pack()
 
+        # Виджеты для ввода количества страниц
         self.lbl_pagesQty = Label(master=self.frm_body, text="Кол-во читаемых страниц")
         self.ent_pagesQty = Entry(master=self.frm_body, width=50)
         self.ent_pagesQty.insert(0, PagesRange)
-        # Использует менеджер геометрии grid для размещения ярлыка и
-        # однострочного поля для ввода текста в первый и второй столбец
-        # первой строки сетки.
         self.lbl_pagesQty.grid(row=0, column=0, sticky="w")
         self.ent_pagesQty.grid(row=0, column=1)
 
-        # Создает ярлык и текстовое поле для ввода начальной страницы.
-        self.lbl_starturl = Label(master=self.frm_body, text="Начальная страница", )
+        # Виджеты для ввода начальной страницы
+        self.lbl_starturl = Label(master=self.frm_body, text="Начальная страница")
         self.ent_starturl = Entry(master=self.frm_body, width=50)
         self.ent_starturl.insert(0, starturl)
-        # Размещает виджеты на вторую строку сетки
         self.lbl_starturl.grid(row=1, column=0, sticky="w")
         self.ent_starturl.grid(row=1, column=1)
 
-        # Флажок авторизации
-        self.needauth = BooleanVar()
-        self.chbtn_auth = Checkbutton(master=self.frm_body, text="Авторизоваться", variable=self.needauth, command=self.CheckButton_Change)
-        self.chbtn_auth.grid(row=2, column=0, sticky="w")
-        
-        # Поля Логин и Пароль
-        self.login = StringVar()
-        self.passwd = StringVar()
-        self.lbl_login = Label(master=self.frm_body, text="Логин")
-        self.ent_login = Entry(master=self.frm_body, width=50, textvariable=self.login, state=DISABLED)
-     
-        self.lbl_login.grid(row=3, column=0, sticky="w")
-        self.ent_login.grid(row=3, column=1)
-
-        self.lbl_passwd = Label(master=self.frm_body, text="Пароль")
-        self.ent_passwd = Entry(master=self.frm_body, show='*', width=50, textvariable=self.passwd, state=DISABLED)
-     
-        self.lbl_passwd.grid(row=4, column=0, sticky="w")
-        self.ent_passwd.grid(row=4, column=1)
-
-        # Создает ярлык и текстовое поле для ввода начальной страницы.
-        self.lbl_starturl = Label(master=self.frm_body, text="Начальная страница", )
-        self.ent_starturl = Entry(master=self.frm_body, width=50)
-        self.ent_starturl.insert(0, starturl)
-        # Размещает виджеты на вторую строку сетки
-        self.lbl_starturl.grid(row=1, column=0, sticky="w")
-        self.ent_starturl.grid(row=1, column=1)
+        # Прогресс-бар (новый элемент)
+        self.frm_progress = Frame(self)
+        self.frm_progress.pack(fill=X, padx=10, pady=10)
+        self.progress = Progressbar(self.frm_progress, orient="horizontal", mode="determinate", length=300)
+        self.progress.pack(fill=X)
 
         # Подвал с кнопками
         self.frm_footer = Frame(self)
         self.frm_footer.pack(fill=X, ipadx=5, ipady=5)
-        
         self.btn_quit = Button(master=self.frm_footer, text="Закрыть", command=self.quit)
         self.btn_quit.pack(side=RIGHT, padx=10, ipadx=10)
-
-        self.btn_run = Button(master=self.frm_footer, text="Запустить", command=self.ParseComments)
-        self.btn_run.pack(side=RIGHT, ipadx=10) 
-
+        # Кнопка "Запустить" запускает парсинг в отдельном потоке
+        self.btn_run = Button(master=self.frm_footer, text="Запустить", command=self.start_parsing_thread)
+        self.btn_run.pack(side=RIGHT, ipadx=10)
         self.btn_about = Button(master=self.frm_footer, text="?", command=self.About, bg="#83c795")
-        self.btn_about.pack(side=LEFT, padx=10)  
+        self.btn_about.pack(side=LEFT, padx=10)
 
-    # Открыть доступ к логину и паролю
-    def CheckButton_Change(self):
-        if self.needauth.get(): 
-            self.ent_login['state'] = NORMAL
-            self.ent_passwd['state'] = NORMAL
-        else:
-            self.ent_login['state'] = DISABLED
-            self.ent_passwd['state'] = DISABLED
-
-    # Окно "О программе"
-    def About(Self):
+    def About(self):
         messagebox.showinfo("О программе", "Сделано Aelih. Спасибо за использование :-)")
 
-    # Чтение и подготовка страницы по URL
+    # Чтение и подготовка страницы по URL с обработкой ошибок
     def ReadPageSoup(self, pageUrl):
-        if self.needauth.get():
-            Startpage = requests.get(pageUrl, auth=(self.login.get(), self.passwd.get()))
-        else:
-            Startpage = requests.get(pageUrl)   
-        sleep(sleeptime)
-        SoupStartpage = BeautifulSoup(Startpage.text, "html.parser")
-        return SoupStartpage
+        try:
+            response = requests.get(pageUrl)
+            response.raise_for_status()  # Генерирует исключение при ошибке запроса
+        except requests.RequestException as e:
+            messagebox.showerror("Ошибка", f"Не удалось загрузить страницу:\n{e}")
+            return None
+        return BeautifulSoup(response.text, "html.parser")
 
     # Проверка на корректность URL
     def CorrectUrl(self, commenttext):
-        if url(commenttext) == True and commenttext.find('instagram') == -1 and commenttext.find('reactor') == -1:
-            return True
+        return url(commenttext) and ('instagram' not in commenttext) and ('reactor' not in commenttext)
+
+    def get_desktop_path(self):
+        CSIDL_DESKTOPDIRECTORY = 0x10  # Константа для рабочего стола
+        MAX_PATH = 260
+        buf = create_unicode_buffer(MAX_PATH)
+        # SHGetFolderPathW возвращает 0 при успехе
+        result = windll.shell32.SHGetFolderPathW(None, CSIDL_DESKTOPDIRECTORY, None, 0, buf)
+        if result == 0:
+            return buf.value
         else:
-            return False
+            raise Exception("Не удалось получить путь к рабочему столу")
 
-    # Сохраняем таблицу в CSV через pandas
+    # Сохранение результатов в CSV-файл через pandas
     def SaveToCsv(self):
+        desktoppath = self.get_desktop_path() 
         header = ['link', 'post']
-        df = pd.DataFrame(dataleaklinks, columns=header)
-        df.to_csv(desktoppath+'\leaked.csv', sep=';', encoding='utf8')
-        messagebox.showinfo("Готово!", "Файл найдёшь здесь: " +
-                            desktoppath+'\leaked.csv')
+        filepath = path.join(desktoppath, 'leaked.csv')
+        df = pd.DataFrame(self.dataleaklinks, columns=header)
+        df.to_csv(filepath, sep=';', encoding='utf8')
+        messagebox.showinfo("Готово!", "Файл найдёшь здесь: " + filepath)
 
-    # Разбор комментариев
+    # Разбор комментариев с обновлением прогресс-бара
     def ParseComments(self):
-        #Обновляем переменные забирая значения из окна
-        PagesRange = int(self.ent_pagesQty.get())
+        # Сбрасываем список результатов
+        self.dataleaklinks = []
+        try:
+            pages_range = int(self.ent_pagesQty.get())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Введите корректное число страниц")
+            return
+        start_url = self.ent_starturl.get()
 
-        # Читает начальную страницу
-        SoupStartpage = self.ReadPageSoup(starturl)
+        # Инициализируем прогресс-бар: максимум = количеству страниц, текущее значение = 0
+        self.progress.config(maximum=pages_range, value=0)
 
-        for i in range(PagesRange):
-            NextPageUrl = stdurl+SoupStartpage.find('a', class_='next').get('href')
-            posts = SoupStartpage.findAll('span', class_='link_wr')
+        SoupStartpage = self.ReadPageSoup(start_url)
+        if SoupStartpage is None:
+            return
+
+        for i in range(pages_range):
+            # Ищем ссылку "Вперед"
+            next_link = SoupStartpage.find('a', class_='next')
+            if next_link and next_link.get('href'):
+                NextPageUrl = stdurl + next_link.get('href')
+            else:
+                messagebox.showerror("Ошибка", "Не найдена ссылка 'Вперед'. Операция прервана.")
+                break
+
+            posts = SoupStartpage.findAll('span', class_='manage')
             datapostlinks = []
-
             for post in posts:
-                postlink = stdurl+post.find('a', class_='link').get('href')
+                link_tag = post.find('a', class_='link')
+                if not link_tag:
+                    continue
+                href = link_tag.get('href')
+                if not href:
+                    continue
+                postlink = stdurl + href
                 datapostlinks.append(postlink)
 
             for datapostlink in datapostlinks:
-                if self.needauth.get():
-                    respost = requests.get(datapostlink, auth=(self.login.get(), self.passwd.get()))
-                else: 
-                    respost = requests.get(datapostlink)
-                sleep(sleeptime)
-                soup = BeautifulSoup(respost.text, "html.parser")
-                comments = soup.findAll('div', class_='comment')
+                try:
+                    response = requests.get(datapostlink)
+                    response.raise_for_status()
+                except requests.RequestException as e:
+                    messagebox.showerror("Ошибка", f"Не удалось загрузить страницу: {e}")
+                    continue  # Переход к следующему datapostlink
 
+                soup = BeautifulSoup(response.text, "html.parser")
+                comments = soup.findAll('div', class_='post_comment_list')
                 for comment in comments:
-                    soupcomment = BeautifulSoup(str(comment), "html.parser")
-                    refs = soupcomment.findAll('a')
-
+                    refs = comment.findAll('a')
                     for ref in refs:
-                        if self.CorrectUrl(ref.text) == True:
-                            dataleaklinks.append([ref.text, datapostlink])
+                        if self.CorrectUrl(ref.text):
+                            self.dataleaklinks.append([ref.text, datapostlink])
 
-            # Читает следующую страницу (кнопка Вперед)
+            # Читаем следующую страницу (кнопка "Вперед")
             SoupStartpage = self.ReadPageSoup(NextPageUrl)
+            if SoupStartpage is None:
+                break
+
+            # Обновляем прогресс-бар: шаг увеличивается на 1
+            self.progress.step(1)
 
         self.SaveToCsv()
+
+    # Запуск парсинга в отдельном потоке для сохранения отзывчивости интерфейса
+    def start_parsing_thread(self):
+        self.btn_run.config(state="disabled") # Деактивируем кнопку
+        thread = threading.Thread(target=self.thread_wrapper)
+        thread.daemon = True
+        thread.start()
+
+    def thread_wrapper(self):
+        self.ParseComments()
+        # По окончании работы включаем кнопку обратно
+        self.parent.after(0, lambda: self.btn_run.config(state="normal"))
 
 # Персональные настройки окна    
 def WindowCustomize(Window):
     Window.resizable(width=False, height=False)
 
-# Создаём главное-корневое окно
+# Создаём главное окно
 def main():
     Window = Tk()
     MainForm(Window)
