@@ -30,13 +30,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def btnClicked(self):
         ApiKey = self.ui.lineEdit_apikey.text()
+        TextMessage = ""
         if len(ApiKey) == 32:
             QtWidgets.QMessageBox.about(self, "Correct API!", "You're goddamn right!")
             result = asyncio.run(ApiGet(ApiUrl+"ISteamNews/GetNewsForApp/v0002/?appid=440&count=3&maxlength=300&format=json"))
-            for element in result:
-                TextMessage = f"Title{element['title']}"    
+            if result[0] is not None:
+                TextMessage = f"Title: {result[0]['title']}"
         else:
-            QtWidgets.QMessageBox.about(self, "Incorrect API!", "No! Goddamn, No!!!")    
+            QtWidgets.QMessageBox.about(self, "Incorrect API!", "No! Goddamn, No!!!")
+
+        if TextMessage:
+            QtWidgets.QMessageBox.about(self, "Message", TextMessage)
 
 
 
